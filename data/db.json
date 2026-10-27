@@ -1,0 +1,432 @@
+{
+  "jobs": [
+    {
+      "id": "job_mvnso0hlcmnnc",
+      "prompt": "A vertical 9:16 3D isometric motion graphic animation in high-frame-rate 60fps. Dark mode background #0D0D0D with subtle tech grid lines. Sleek 3D exploded view showing a modern Wi-Fi router disassembling in mid-air, revealing internal components and circuit board with glowing cyan and orange data pathways. Smooth transition zooming out to show glowing blue ethernet cables (LAN) connecting a laptop and smart devices inside a minimalist room, then transforming into a massive golden fiber-optic laser beam shooting out into a global ocean map with undersea cables (WAN)",
+      "referenceIds": [],
+      "aspectRatio": "9:16",
+      "durationSec": 45,
+      "style": "cinematic",
+      "voice": "male-id",
+      "model": "studio-v1",
+      "status": "ready",
+      "progress": 100,
+      "createdAt": 1792938653387,
+      "updatedAt": 1792990013443,
+      "title": "A vertical 9:16 3D isometric motion graphic animation",
+      "hook": "Stop scrolling — 90% orang salah paham soal vertical.",
+      "script": "# A vertical 9:16 3D isometric motion graphic animation\n\n**Format:** 9:16 · 45s · gaya cinematic · voice pria Indonesia, hangat, tempo sedang\n**Hook (0–3s):** Stop scrolling — 90% orang salah paham soal vertical.\n\n## Isi\n1. 00:00–00:05 — Stop scrolling — 90% orang salah paham soal vertical.\n   VO: Stop scrolling — 90% orang salah paham soal vertical.\n2. 00:05–00:11 — Konteks: isometric\n   VO: Poin 1: isometric — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.\n3. 00:11–00:16 — Masalah: motion\n   VO: Poin 2: motion — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.\n4. 00:16–00:22 — Solusi: graphic\n   VO: Poin 3: graphic — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.\n5. 00:22–00:28 — Bukti: animation\n   VO: Poin 4: animation — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.\n6. 00:28–00:33 — Penerapan: high\n   VO: Poin 5: high — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.\n7. 00:33–00:39 — Ringkasan: frame\n   VO: Poin 6: frame — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.\n8. 00:39–00:45 — Follow untuk part berikutnya →\n   VO: Poin 7: rate — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.\n\n## Catatan produksi\n- Belum ada referensi. Tambahkan link YouTube/Instagram agar struktur lebih tajam.\n- Aspect ratio 9:16; amankan safe-area untuk caption platform.",
+      "caption": "Stop scrolling — 90% orang salah paham soal vertical.\n\nKalau kamu lagi bikin vertical, simpan video ini. Poin isometric-nya jarang dibahas.\nMana yang paling relevan buat kamu? Tulis di komentar 👇",
+      "hashtags": [
+        "#vertical",
+        "#isometric",
+        "#motion",
+        "#graphic",
+        "#animation",
+        "#high",
+        "#frame",
+        "#rate"
+      ],
+      "scenes": [
+        {
+          "index": 1,
+          "timecode": "00:00–00:05",
+          "visual": "Hook: talking head close-up + oversized text. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+          "onScreenText": "Stop scrolling — 90% orang salah paham soal vertical.",
+          "voiceover": "Stop scrolling — 90% orang salah paham soal vertical.",
+          "broll": "screen capture"
+        },
+        {
+          "index": 2,
+          "timecode": "00:05–00:11",
+          "visual": "Konteks: b-roll vertical / isometric. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+          "onScreenText": "Konteks: isometric",
+          "voiceover": "Poin 1: isometric — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.",
+          "broll": "close-up produk"
+        },
+        {
+          "index": 3,
+          "timecode": "00:11–00:16",
+          "visual": "Masalah: b-roll vertical / isometric. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+          "onScreenText": "Masalah: motion",
+          "voiceover": "Poin 2: motion — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.",
+          "broll": "timelapse"
+        },
+        {
+          "index": 4,
+          "timecode": "00:16–00:22",
+          "visual": "Solusi: b-roll vertical / isometric. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+          "onScreenText": "Solusi: graphic",
+          "voiceover": "Poin 3: graphic — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.",
+          "broll": "tangan menulis"
+        },
+        {
+          "index": 5,
+          "timecode": "00:22–00:28",
+          "visual": "Bukti: b-roll vertical / isometric. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+          "onScreenText": "Bukti: animation",
+          "voiceover": "Poin 4: animation — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.",
+          "broll": "grafik bergerak"
+        },
+        {
+          "index": 6,
+          "timecode": "00:28–00:33",
+          "visual": "Penerapan: b-roll vertical / isometric. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+          "onScreenText": "Penerapan: high",
+          "voiceover": "Poin 5: high — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.",
+          "broll": "screen capture"
+        },
+        {
+          "index": 7,
+          "timecode": "00:33–00:39",
+          "visual": "Ringkasan: b-roll vertical / isometric. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+          "onScreenText": "Ringkasan: frame",
+          "voiceover": "Poin 6: frame — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.",
+          "broll": "close-up produk"
+        },
+        {
+          "index": 8,
+          "timecode": "00:39–00:45",
+          "visual": "CTA: b-roll vertical / isometric. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+          "onScreenText": "Follow untuk part berikutnya →",
+          "voiceover": "Poin 7: rate — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.",
+          "broll": "timelapse"
+        }
+      ],
+      "thumbnailIdea": "Close-up vertical dengan teks besar 4–6 kata, kontras tinggi, wajah berekspresi di kanan bawah.",
+      "musicMood": "upbeat electronic, 120 BPM, drop di detik 3",
+      "logs": [
+        {
+          "at": 1792938653387,
+          "message": "Render diulang dari awal"
+        },
+        {
+          "at": 1792990013446,
+          "message": "Video siap diunduh / dijadwalkan"
+        },
+        {
+          "at": 1792990013443,
+          "message": "Editor disimpan · 8 klip · 8 caption"
+        }
+      ],
+      "editor": {
+        "version": 1,
+        "duration": 45,
+        "clips": [
+          {
+            "id": "clip_mvnuov7q0v68",
+            "sceneIndex": 1,
+            "start": 0,
+            "end": 5,
+            "title": "Stop scrolling — 90% orang salah p",
+            "visual": "Hook: talking head close-up + oversized text. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+            "broll": "screen capture"
+          },
+          {
+            "id": "clip_mvnuov7qc3v3",
+            "sceneIndex": 2,
+            "start": 5,
+            "end": 11,
+            "title": "isometric",
+            "visual": "Konteks: b-roll vertical / isometric. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+            "broll": "close-up produk"
+          },
+          {
+            "id": "clip_mvnuov7rwj93",
+            "sceneIndex": 3,
+            "start": 11,
+            "end": 16,
+            "title": "motion",
+            "visual": "Masalah: b-roll vertical / isometric. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+            "broll": "timelapse"
+          },
+          {
+            "id": "clip_mvnuov7reqsy",
+            "sceneIndex": 4,
+            "start": 16,
+            "end": 22,
+            "title": "graphic",
+            "visual": "Solusi: b-roll vertical / isometric. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+            "broll": "tangan menulis"
+          },
+          {
+            "id": "clip_mvnuov7rutpd",
+            "sceneIndex": 5,
+            "start": 22,
+            "end": 28,
+            "title": "animation",
+            "visual": "Bukti: b-roll vertical / isometric. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+            "broll": "grafik bergerak"
+          },
+          {
+            "id": "clip_mvnuov7rnsn5",
+            "sceneIndex": 6,
+            "start": 28,
+            "end": 33,
+            "title": "high",
+            "visual": "Penerapan: b-roll vertical / isometric. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+            "broll": "screen capture"
+          },
+          {
+            "id": "clip_mvnuov7r9x67",
+            "sceneIndex": 7,
+            "start": 33,
+            "end": 39,
+            "title": "frame",
+            "visual": "Ringkasan: b-roll vertical / isometric. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+            "broll": "close-up produk"
+          },
+          {
+            "id": "clip_mvnuov7rrda7",
+            "sceneIndex": 8,
+            "start": 39,
+            "end": 45,
+            "title": "Follow untuk part berikutnya →",
+            "visual": "CTA: b-roll vertical / isometric. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+            "broll": "timelapse"
+          }
+        ],
+        "captions": [
+          {
+            "id": "cap_mvnuov7r1pd7",
+            "start": 0,
+            "end": 5,
+            "text": "Stop scrolling — 90% orang salah paham soal vertical.",
+            "style": "bold",
+            "position": "bottom"
+          },
+          {
+            "id": "cap_mvnuov7rqme5",
+            "start": 5,
+            "end": 11,
+            "text": "Konteks: isometric",
+            "style": "bold",
+            "position": "bottom"
+          },
+          {
+            "id": "cap_mvnuov7r0nr7",
+            "start": 11,
+            "end": 16,
+            "text": "Masalah: motion",
+            "style": "bold",
+            "position": "bottom"
+          },
+          {
+            "id": "cap_mvnuov7ry25t",
+            "start": 16,
+            "end": 22,
+            "text": "Solusi: graphic",
+            "style": "bold",
+            "position": "bottom"
+          },
+          {
+            "id": "cap_mvnuov7rltv4",
+            "start": 22,
+            "end": 28,
+            "text": "Bukti: animation",
+            "style": "bold",
+            "position": "bottom"
+          },
+          {
+            "id": "cap_mvnuov7r18sy",
+            "start": 28,
+            "end": 33,
+            "text": "Penerapan: high",
+            "style": "bold",
+            "position": "bottom"
+          },
+          {
+            "id": "cap_mvnuov7r6ihx",
+            "start": 33,
+            "end": 39,
+            "text": "Ringkasan: frame",
+            "style": "bold",
+            "position": "bottom"
+          },
+          {
+            "id": "cap_mvnuov7rzjlb",
+            "start": 39,
+            "end": 45,
+            "text": "Follow untuk part berikutnya →",
+            "style": "bold",
+            "position": "bottom"
+          }
+        ],
+        "overlays": [
+          {
+            "id": "ov_mvnuov7rv3pd",
+            "start": 0.3,
+            "end": 3.8,
+            "text": "A VERTICAL 9:16 3D ISOMETRIC MOTION GRAPHIC ANIMATION",
+            "variant": "title"
+          },
+          {
+            "id": "ov_mvnuov7rcdzl",
+            "start": 41,
+            "end": 45,
+            "text": "Follow untuk part berikutnya →",
+            "variant": "badge"
+          }
+        ],
+        "music": {
+          "title": "Bright Answers",
+          "prompt": "Musik upbeat yang ringan dan energik. Plucked synth, clap, dan bass groove dengan tempo 120 BPM, tanpa vokal, cocok untuk konten edukasi cepat.",
+          "style": "upbeat electronic, bright plucks, light percussion, 120 BPM, instrumental",
+          "exclude": "vocals, aggressive distortion, heavy metal",
+          "description": "A bright, upbeat electronic bed with playful plucks and a light groove. Energik tapi tetap ramah untuk voice over edukasi.",
+          "volume": 72
+        },
+        "voiceVolume": 88,
+        "captionsEnabled": true,
+        "chat": [
+          {
+            "id": "msg_mvnuov7rjf2f",
+            "role": "assistant",
+            "text": "Editor siap untuk “A vertical 9:16 3D isometric motion graphic animation”. Aku bisa bantu potong klip, rapikan caption, ganti musik, atau tambah overlay. Coba ketik: “perpendek caption”, “musik lebih tenang”, atau “tambah overlay CTA di akhir”.",
+            "at": 1792934133255
+          }
+        ],
+        "updatedAt": 1792990013443
+      }
+    },
+    {
+      "id": "job_mvme0mqc11ar9",
+      "prompt": "video tentang cara memilih mikrofon untuk podcaster pemula",
+      "referenceIds": [],
+      "aspectRatio": "9:16",
+      "durationSec": 45,
+      "style": "cinematic",
+      "voice": "female-id",
+      "model": "studio-v1",
+      "status": "ready",
+      "progress": 100,
+      "createdAt": 1792845662484,
+      "updatedAt": 1792847664561,
+      "title": "Video & tentang: panduan singkat",
+      "hook": "video bisa 3x lebih cepat kalau kamu tahu tentang yang satu ini.",
+      "script": "# Video & tentang: panduan singkat\n\n**Format:** 9:16 · 45s · gaya cinematic · voice wanita Indonesia, energik, artikulasi jelas\n**Hook (0–3s):** video bisa 3x lebih cepat kalau kamu tahu tentang yang satu ini.\n\n## Isi\n1. 00:00–00:05 — video bisa 3x lebih cepat kalau kamu tahu tentang yang satu \n   VO: video bisa 3x lebih cepat kalau kamu tahu tentang yang satu ini.\n2. 00:05–00:11 — Konteks: tentang\n   VO: Poin 1: tentang — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.\n3. 00:11–00:16 — Masalah: cara\n   VO: Poin 2: cara — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.\n4. 00:16–00:22 — Solusi: memilih\n   VO: Poin 3: memilih — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.\n5. 00:22–00:28 — Bukti: mikrofon\n   VO: Poin 4: mikrofon — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.\n6. 00:28–00:33 — Penerapan: podcaster\n   VO: Poin 5: podcaster — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.\n7. 00:33–00:39 — Ringkasan: pemula\n   VO: Poin 6: pemula — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.\n8. 00:39–00:45 — Follow untuk part berikutnya →\n   VO: Poin 7: rick — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.\n\n## Catatan produksi\n- Format lanskap: gunakan cold-open 5 detik lalu intro singkat.\n- Ambil pola hook & transisi saja, bukan aset berhak cipta. Buat ulang visual dari nol.\n- Aspect ratio 9:16; amankan safe-area untuk caption platform.",
+      "caption": "video bisa 3x lebih cepat kalau kamu tahu tentang yang satu ini.\n\nKalau kamu lagi bikin video, simpan video ini. Poin tentang-nya jarang dibahas.\nMana yang paling relevan buat kamu? Tulis di komentar 👇",
+      "hashtags": [
+        "#video",
+        "#tentang",
+        "#cara",
+        "#memilih",
+        "#mikrofon",
+        "#podcaster",
+        "#pemula",
+        "#rick"
+      ],
+      "scenes": [
+        {
+          "index": 1,
+          "timecode": "00:00–00:05",
+          "visual": "Hook: talking head close-up + oversized text. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+          "onScreenText": "video bisa 3x lebih cepat kalau kamu tahu tentang yang satu ",
+          "voiceover": "video bisa 3x lebih cepat kalau kamu tahu tentang yang satu ini.",
+          "broll": "screen capture"
+        },
+        {
+          "index": 2,
+          "timecode": "00:05–00:11",
+          "visual": "Konteks: b-roll video / tentang. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+          "onScreenText": "Konteks: tentang",
+          "voiceover": "Poin 1: tentang — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.",
+          "broll": "close-up produk"
+        },
+        {
+          "index": 3,
+          "timecode": "00:11–00:16",
+          "visual": "Masalah: b-roll video / tentang. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+          "onScreenText": "Masalah: cara",
+          "voiceover": "Poin 2: cara — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.",
+          "broll": "timelapse"
+        },
+        {
+          "index": 4,
+          "timecode": "00:16–00:22",
+          "visual": "Solusi: b-roll video / tentang. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+          "onScreenText": "Solusi: memilih",
+          "voiceover": "Poin 3: memilih — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.",
+          "broll": "tangan menulis"
+        },
+        {
+          "index": 5,
+          "timecode": "00:22–00:28",
+          "visual": "Bukti: b-roll video / tentang. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+          "onScreenText": "Bukti: mikrofon",
+          "voiceover": "Poin 4: mikrofon — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.",
+          "broll": "grafik bergerak"
+        },
+        {
+          "index": 6,
+          "timecode": "00:28–00:33",
+          "visual": "Penerapan: b-roll video / tentang. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+          "onScreenText": "Penerapan: podcaster",
+          "voiceover": "Poin 5: podcaster — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.",
+          "broll": "screen capture"
+        },
+        {
+          "index": 7,
+          "timecode": "00:33–00:39",
+          "visual": "Ringkasan: b-roll video / tentang. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+          "onScreenText": "Ringkasan: pemula",
+          "voiceover": "Poin 6: pemula — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.",
+          "broll": "close-up produk"
+        },
+        {
+          "index": 8,
+          "timecode": "00:39–00:45",
+          "visual": "CTA: b-roll video / tentang. gerakan kamera lambat, depth of field tipis, color grading teal-orange. Komposisi 9:16.",
+          "onScreenText": "Follow untuk part berikutnya →",
+          "voiceover": "Poin 7: rick — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.",
+          "broll": "timelapse"
+        }
+      ],
+      "thumbnailIdea": "Close-up video dengan teks besar 4–6 kata, kontras tinggi, wajah berekspresi di kanan bawah.",
+      "musicMood": "upbeat electronic, 120 BPM, drop di detik 3",
+      "logs": [
+        {
+          "at": 1792845662484,
+          "message": "Job dibuat, masuk antrean render"
+        },
+        {
+          "at": 1792847664560,
+          "message": "Video siap diunduh / dijadwalkan"
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "url": "https://www.youtube.com/watch?v=xBZzVNi_4Xw",
+      "platform": "youtube",
+      "title": "[motion graphics] hi, aflow. - identity film",
+      "author": "aflow",
+      "thumbnail": "https://i.ytimg.com/vi/xBZzVNi_4Xw/hqdefault.jpg",
+      "insights": [
+        "Format lanskap: gunakan cold-open 5 detik lalu intro singkat.",
+        "Ambil pola hook & transisi saja, bukan aset berhak cipta. Buat ulang visual dari nol."
+      ],
+      "tags": [
+        "motion",
+        "graphics",
+        "aflow",
+        "identity",
+        "film"
+      ],
+      "id": "ref_mvmf8or067fov",
+      "createdAt": 1792847717964
+    }
+  ],
+  "automations": [],
+  "socialAccounts": [
+    {
+      "id": "soc_mvoyu4t1984yj",
+      "platform": "instagram",
+      "accountName": "brotek_aja",
+      "enabled": true,
+      "createdAt": 1793001563605
+    }
+  ],
+  "posts": []
+}

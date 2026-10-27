@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink-950: #07080c;
+  --color-ink-900: #0b0d13;
+  --color-ink-850: #10131b;
+  --color-ink-800: #151925;
+  --color-ink-700: #1e2434;
+  --color-ink-600: #2a3247;
+  --color-brand-400: #ff6b8a;
+  --color-brand-500: #f43f5e;
+  --color-brand-600: #e11d48;
+  --color-accent-400: #a78bfa;
+  --color-accent-500: #8b5cf6;
+  --color-lime-400: #a3e635;
+  --font-sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(1100px 600px at 8% -10%, rgba(139, 92, 246, 0.16), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(244, 63, 94, 0.14), transparent 55%),
+    var(--color-ink-950);
+  color: #e7e9f0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(244, 63, 94, 0.35);
+}
+
+/* Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a3247 transparent;
+}
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #2a3247;
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #3a4460;
+}
+
+@utility card {
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015));
+  backdrop-filter: blur(10px);
+}
+
+@utility input-base {
+  width: 100%;
+  border-radius: 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(7, 8, 12, 0.65);
+  padding: 0.6rem 0.8rem;
+  font-size: 0.875rem;
+  color: #e7e9f0;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.input-base::placeholder {
+  color: #6b7488;
+}
+.input-base:focus {
+  border-color: rgba(244, 63, 94, 0.55);
+  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.12);
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.13), transparent);
+  animation: shimmer 1.6s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.85); }
+}
+.pulse-dot {
+  animation: pulse-dot 1.2s ease-in-out infinite;
+}
