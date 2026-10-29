@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { mutate } from "@/app/lib/store";
-import type { EditorProject } from "@/app/types";
+import { prisma, editorJson, jsonValue } from "@/app/lib/db";
+import type { EditorProject, VideoJob } from "@/app/types";
 
 export const dynamic = "force-dynamic";
 
@@ -44,19 +44,26 @@ export async function PUT(req: Request, { params }: Ctx) {
     updatedAt: now,
   };
 
-  const saved = await mutate((db) => {
-    const job = db.jobs.find((j) => j.id === id);
-    if (!job) return null;
-    job.editor = editor;
-    if (nextTitle) job.title = nextTitle;
-    job.updatedAt = now;
-    job.logs = [
-      ...job.logs,
-      { at: now, message: `Editor disimpan · ${editor.clips.length} klip · ${editor.captions.length} caption` },
-    ].slice(-40);
-    return editor;
+  const row = await prisma.videoJob.findUnique({ where: { id } });
+  if (!row) return NextResponse.json({ error: "Job tidak ditemukan" }, { status: 404 });
+
+  const logs = [
+    ...((row.logs ?? []) as unknown as VideoJob["logs"]),
+    {
+      at: now,
+      message: `Editor disimpan · ${editor.clips.length} klip · ${editor.captions.length} caption`,
+    },
+  ].slice(-40);
+
+  await prisma.videoJob.update({
+    where: { id },
+    data: {
+      editor: editorJson(editor),
+      logs: jsonValue(logs),
+      updatedAt: new Date(now),
+      ...(nextTitle ? { title: nextTitle } : {}),
+    },
   });
 
-  if (!saved) return NextResponse.json({ error: "Job tidak ditemukan" }, { status: 404 });
-  return NextResponse.json({ editor: saved, savedAt: now });
+  return NextResponse.json({ editor, savedAt: now });
 }

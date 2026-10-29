@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDb, mutate } from "@/app/lib/store";
+import { prisma, toSocialAccount } from "@/app/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -15,29 +15,24 @@ export async function PATCH(
     return NextResponse.json({ error: "Body JSON tidak valid" }, { status: 400 });
   }
 
-  const account = await mutate((db) => {
-    const target = db.socialAccounts.find((a) => a.id === id);
-    if (!target) return null;
+  const row = await prisma.socialAccount.findUnique({ where: { id } });
+  if (!row) return NextResponse.json({ error: "Akun tidak ditemukan" }, { status: 404 });
 
-    if (typeof body.accountName === "string" && body.accountName.trim().length >= 2) {
-      target.accountName = body.accountName.trim();
-    }
-    if (typeof body.accessToken === "string") {
-      target.accessToken = body.accessToken || undefined;
-    }
-    if (typeof body.userId === "string") {
-      target.userId = body.userId || undefined;
-    }
-    if (typeof body.enabled === "boolean") {
-      target.enabled = body.enabled;
-    }
-    return target;
+  const updated = await prisma.socialAccount.update({
+    where: { id },
+    data: {
+      ...(typeof body.accountName === "string" && body.accountName.trim().length >= 2
+        ? { accountName: body.accountName.trim() }
+        : {}),
+      ...(typeof body.accessToken === "string"
+        ? { accessToken: body.accessToken || null }
+        : {}),
+      ...(typeof body.userId === "string" ? { userId: body.userId || null } : {}),
+      ...(typeof body.enabled === "boolean" ? { enabled: body.enabled } : {}),
+    },
   });
 
-  if (!account) {
-    return NextResponse.json({ error: "Akun tidak ditemukan" }, { status: 404 });
-  }
-  return NextResponse.json({ account });
+  return NextResponse.json({ account: toSocialAccount(updated) });
 }
 
 export async function DELETE(
@@ -45,14 +40,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const ok = await mutate((db) => {
-    const idx = db.socialAccounts.findIndex((a) => a.id === id);
-    if (idx === -1) return false;
-    db.socialAccounts.splice(idx, 1);
-    return true;
-  });
-  if (!ok) {
-    return NextResponse.json({ error: "Akun tidak ditemukan" }, { status: 404 });
-  }
+  const { count } = await prisma.socialAccount.deleteMany({ where: { id } });
+  if (count === 0) return NextResponse.json({ error: "Akun tidak ditemukan" }, { status: 404 });
   return NextResponse.json({ ok: true });
 }

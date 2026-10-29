@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { mutate } from "@/app/lib/store";
+import { prisma } from "@/app/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -7,16 +7,16 @@ type Ctx = { params: Promise<{ id: string }> };
 
 export async function DELETE(_req: Request, { params }: Ctx) {
   const { id } = await params;
-  const ok = await mutate((db) => {
-    const i = db.references.findIndex((r) => r.id === id);
-    if (i === -1) return false;
-    db.references.splice(i, 1);
-    // Detach from any job that referenced it.
-    for (const job of db.jobs) {
-      job.referenceIds = job.referenceIds.filter((rid) => rid !== id);
-    }
-    return true;
-  });
-  if (!ok) return NextResponse.json({ error: "Referensi tidak ditemukan" }, { status: 404 });
+
+  const { count } = await prisma.referenceSource.deleteMany({ where: { id } });
+  if (count === 0) return NextResponse.json({ error: "Referensi tidak ditemukan" }, { status: 404 });
+
+  // Detach from any job that referenced it.
+  await prisma.$executeRaw`
+    UPDATE "VideoJob"
+    SET "referenceIds" = array_remove("referenceIds", ${id})
+    WHERE ${id} = ANY("referenceIds")
+  `;
+
   return NextResponse.json({ ok: true });
 }

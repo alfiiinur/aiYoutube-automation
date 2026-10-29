@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import { getDb, mutate, newId } from "@/app/lib/store";
+import { prisma, socialPostCreateData, toSocialAccount, toSocialPost } from "@/app/lib/db";
+import { newId } from "@/app/lib/store";
 import { publishPost, shouldPublishNow } from "@/app/lib/publisher";
+import { notifyPostResult } from "@/app/lib/telegram";
 import type { SocialPlatform, SocialPost } from "@/app/types";
 
 export const dynamic = "force-dynamic";
@@ -8,11 +10,8 @@ export const dynamic = "force-dynamic";
 const PLATFORMS: SocialPlatform[] = ["threads", "instagram", "facebook"];
 
 export async function GET() {
-  const db = await getDb();
-  const posts = [...db.posts].sort(
-    (a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime(),
-  );
-  return NextResponse.json({ posts });
+  const rows = await prisma.socialPost.findMany({ orderBy: { scheduledAt: "asc" } });
+  return NextResponse.json({ posts: rows.map(toSocialPost) });
 }
 
 export async function POST(req: Request) {
@@ -34,52 +33,54 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Jadwal posting tidak valid" }, { status: 400 });
   }
 
-  const post = await mutate(async (db) => {
-    const job = db.jobs.find((j) => j.id === jobId);
-    if (!job) {
-      throw new Error("Job tidak ditemukan. Pilih job yang sudah berstatus Siap.");
+  const jobRow = await prisma.videoJob.findUnique({ where: { id: jobId } });
+  if (!jobRow) {
+    return NextResponse.json(
+      { error: "Job tidak ditemukan. Pilih job yang sudah berstatus Siap." },
+      { status: 404 },
+    );
+  }
+
+  const caption = String(body.caption ?? jobRow.caption ?? "").trim();
+  const hashtags = Array.isArray(body.hashtags)
+    ? body.hashtags.map(String).filter(Boolean)
+    : jobRow.hashtags;
+
+  const created: SocialPost = {
+    id: newId("post"),
+    jobId,
+    jobTitle: jobRow.title || "Video",
+    platform,
+    caption,
+    hashtags,
+    mediaUrl: body.mediaUrl ? String(body.mediaUrl) : undefined,
+    scheduledAt: new Date(scheduledAt).toISOString(),
+    status: "scheduled",
+    simulated: true,
+    createdAt: Date.now(),
+  };
+
+  // Posting sekarang alias scheduledAt <= sekarang akan langsung diproses.
+  if (shouldPublishNow(created.scheduledAt)) {
+    const accountRow = await prisma.socialAccount.findFirst({
+      where: { platform, enabled: true },
+      orderBy: { createdAt: "desc" },
+    });
+    const result = await publishPost(created, accountRow ? toSocialAccount(accountRow) : undefined);
+    if (result.ok) {
+      created.status = "sent";
+      created.publishedAt = new Date().toISOString();
+      created.postUrl = result.postUrl;
+      created.simulated = result.simulated;
+    } else {
+      created.status = "failed";
+      created.error = result.error;
+      created.simulated = result.simulated;
     }
+  }
 
-    const caption = String(body.caption ?? job.caption ?? "").trim();
-    const hashtags = Array.isArray(body.hashtags)
-      ? body.hashtags.map(String).filter(Boolean)
-      : job.hashtags ?? [];
-
-    const created: SocialPost = {
-      id: newId("post"),
-      jobId,
-      jobTitle: job.title || "Video",
-      platform,
-      caption,
-      hashtags,
-      mediaUrl: body.mediaUrl ? String(body.mediaUrl) : undefined,
-      scheduledAt: new Date(scheduledAt).toISOString(),
-      status: "scheduled",
-      simulated: true,
-      createdAt: Date.now(),
-    };
-
-    // Posting sekarang alias scheduledAt <= sekarang akan langsung diproses.
-    if (shouldPublishNow(created.scheduledAt)) {
-      const account = db.socialAccounts.find(
-        (a) => a.platform === platform && a.enabled === true,
-      );
-      const result = await publishPost(created, account);
-      if (result.ok) {
-        created.status = "sent";
-        created.publishedAt = new Date().toISOString();
-        created.postUrl = result.postUrl;
-        created.simulated = result.simulated;
-      } else {
-        created.status = "failed";
-        created.error = result.error;
-        created.simulated = result.simulated;
-      }
-    }
-
-    db.posts.unshift(created);
-    return created;
-  });
-
+  const row = await prisma.socialPost.create({ data: socialPostCreateData(created) });
+  const post = toSocialPost(row);
+  await notifyPostResult(post);
   return NextResponse.json({ post }, { status: 201 });
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getDb, mutate, newId } from "@/app/lib/store";
+import { prisma, socialAccountCreateData, toSocialAccount } from "@/app/lib/db";
+import { newId } from "@/app/lib/store";
 import type { SocialAccount, SocialPlatform } from "@/app/types";
 
 export const dynamic = "force-dynamic";
@@ -7,9 +8,8 @@ export const dynamic = "force-dynamic";
 const PLATFORMS: SocialPlatform[] = ["threads", "instagram", "facebook"];
 
 export async function GET() {
-  const db = await getDb();
-  const accounts = [...db.socialAccounts].sort((a, b) => a.createdAt - b.createdAt);
-  return NextResponse.json({ accounts });
+  const rows = await prisma.socialAccount.findMany({ orderBy: { createdAt: "asc" } });
+  return NextResponse.json({ accounts: rows.map(toSocialAccount) });
 }
 
 export async function POST(req: Request) {
@@ -30,19 +30,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Nama akun minimal 2 karakter" }, { status: 400 });
   }
 
-  const account = await mutate((db) => {
-    const created: SocialAccount = {
-      id: newId("soc"),
-      platform,
-      accountName,
-      accessToken: body.accessToken ? String(body.accessToken) : undefined,
-      userId: body.userId ? String(body.userId) : undefined,
-      enabled: Boolean(body.enabled ?? true),
-      createdAt: Date.now(),
-    };
-    db.socialAccounts.unshift(created);
-    return created;
-  });
+  const created: SocialAccount = {
+    id: newId("soc"),
+    platform,
+    accountName,
+    accessToken: body.accessToken ? String(body.accessToken) : undefined,
+    userId: body.userId ? String(body.userId) : undefined,
+    enabled: Boolean(body.enabled ?? true),
+    createdAt: Date.now(),
+  };
 
-  return NextResponse.json({ account }, { status: 201 });
+  const row = await prisma.socialAccount.create({ data: socialAccountCreateData(created) });
+  return NextResponse.json({ account: toSocialAccount(row) }, { status: 201 });
 }

@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
-import { getDb, mutate, newId } from "@/app/lib/store";
-import { generateJobContent } from "@/app/lib/generator";
-import type { AspectRatio, VideoJob } from "@/app/types";
+import { createJob, syncJobs } from "@/app/lib/jobs";
+import type { AspectRatio } from "@/app/types";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const db = await getDb();
-  const jobs = [...db.jobs].sort((a, b) => b.createdAt - a.createdAt);
+  const jobs = await syncJobs();
   return NextResponse.json({ jobs });
 }
 
@@ -30,42 +28,15 @@ export async function POST(req: Request) {
   const aspectRatio = RATIOS.includes(body.aspectRatio as AspectRatio)
     ? (body.aspectRatio as AspectRatio)
     : "9:16";
-  const durationSec = Math.max(10, Math.min(180, Number(body.durationSec ?? 45)));
-  const style = String(body.style ?? "cinematic");
-  const voice = String(body.voice ?? "female-id");
-  const model = String(body.model ?? "studio-v1");
 
-  const job = await mutate((db) => {
-    const references = db.references.filter((r) => referenceIds.includes(r.id));
-    const content = generateJobContent({
-      prompt,
-      references,
-      style,
-      voice,
-      durationSec,
-      aspectRatio,
-      model,
-    });
-
-    const now = Date.now();
-    const created: VideoJob = {
-      id: newId("job"),
-      prompt,
-      referenceIds,
-      aspectRatio,
-      durationSec,
-      style,
-      voice,
-      model,
-      status: "analyzing",
-      progress: 2,
-      createdAt: now,
-      updatedAt: now,
-      ...content,
-      logs: [{ at: now, message: "Job dibuat, masuk antrean render" }],
-    };
-    db.jobs.unshift(created);
-    return created;
+  const job = await createJob({
+    prompt,
+    referenceIds,
+    aspectRatio,
+    durationSec: Number(body.durationSec ?? 45),
+    style: String(body.style ?? "cinematic"),
+    voice: String(body.voice ?? "female-id"),
+    model: String(body.model ?? "studio-v1"),
   });
 
   return NextResponse.json({ job }, { status: 201 });

@@ -1,0 +1,152 @@
+// Prisma schema for Studio AI — YouTube automation
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum JobStatus {
+  queued
+  analyzing
+  scripting
+  rendering
+  ready
+  failed
+}
+
+enum ReferencePlatform {
+  youtube
+  instagram
+  tiktok
+  web
+}
+
+enum SocialPlatform {
+  threads
+  instagram
+  facebook
+}
+
+enum PublishStatus {
+  scheduled
+  sent
+  failed
+}
+
+enum AutomationPlatform {
+  youtube
+  tiktok
+  instagram
+}
+
+enum AutomationPrivacy {
+  public
+  unlisted
+  private
+}
+
+model VideoJob {
+  id            String    @id
+  title         String    @default("")
+  prompt        String
+  referenceIds  String[]  @default([])
+  aspectRatio   String    @default("9:16")
+  durationSec   Int       @default(45)
+  style         String    @default("cinematic")
+  voice         String    @default("female-id")
+  model         String    @default("studio-v1")
+  status        JobStatus @default(queued)
+  progress      Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  hook          String    @default("")
+  script        String    @default("")
+  caption       String    @default("")
+  hashtags      String[]  @default([])
+  scenes        Json      @default("[]")
+  thumbnailIdea String    @default("")
+  musicMood     String    @default("")
+  logs          Json      @default("[]")
+  error         String?
+  editor        Json?
+
+  posts SocialPost[]
+
+  @@index([createdAt])
+  @@index([status])
+}
+
+model ReferenceSource {
+  id           String            @id
+  url          String            @unique
+  platform     ReferencePlatform
+  title        String
+  author       String?
+  thumbnail    String?
+  description  String?
+  durationHint String?
+  insights     String[]          @default([])
+  tags         String[]          @default([])
+  createdAt    DateTime          @default(now())
+
+  @@index([createdAt])
+  @@index([platform])
+}
+
+model Automation {
+  id             String              @id
+  name           String
+  enabled        Boolean             @default(true)
+  cron           String
+  humanSchedule  String
+  promptTemplate String
+  platform       AutomationPlatform  @default(youtube)
+  privacy        AutomationPrivacy   @default(public)
+  lastRunAt      DateTime?
+  nextRunAt      DateTime?
+  runs           Int                 @default(0)
+  createdAt      DateTime            @default(now())
+
+  @@index([createdAt])
+  @@index([enabled])
+}
+
+model SocialAccount {
+  id          String         @id
+  platform    SocialPlatform
+  accountName String
+  accessToken String?
+  userId      String?
+  enabled     Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+
+  @@index([platform])
+}
+
+model SocialPost {
+  id          String        @id
+  jobId       String
+  jobTitle    String
+  platform    SocialPlatform
+  caption     String        @default("")
+  hashtags    String[]      @default([])
+  mediaUrl    String?
+  scheduledAt DateTime
+  status      PublishStatus @default(scheduled)
+  publishedAt DateTime?
+  postUrl     String?
+  simulated   Boolean       @default(true)
+  error       String?
+  createdAt   DateTime      @default(now())
+
+  job VideoJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([scheduledAt])
+  @@index([status])
+  @@index([platform])
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, X, KeyRound, ShieldCheck, Cpu } from "lucide-react";
+import { Check, X, KeyRound, ShieldCheck, Cpu, Send } from "lucide-react";
 import { Card, PageHeader } from "../components/ui";
 
 const PROVIDERS = [
@@ -28,6 +28,12 @@ const PROVIDERS = [
     name: "Voice / TTS",
     env: "ELEVENLABS_API_KEY",
     purpose: "Voice over bahasa Indonesia dengan kloning suara.",
+  },
+  {
+    id: "telegram",
+    name: "Telegram Bot",
+    env: "TELEGRAM_BOT_TOKEN",
+    purpose: "Generate video dan monitoring job langsung dari chat Telegram.",
   },
 ];
 
@@ -93,16 +99,52 @@ export default function SettingsPage() {
         <div className="flex flex-col gap-4">
           <Card className="p-5">
             <div className="flex items-center gap-2">
+              <Send className="size-4 text-sky-300" />
+              <h2 className="text-sm font-semibold text-white/85">Telegram</h2>
+              <span
+                className={`ml-auto rounded-full px-2 py-0.5 text-[10px] ${
+                  health.TELEGRAM_BOT_TOKEN
+                    ? "bg-lime-500/15 text-lime-300"
+                    : "bg-white/6 text-white/35"
+                }`}
+              >
+                {health.TELEGRAM_BOT_TOKEN ? "bot aktif" : "belum diset"}
+              </span>
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] ${
+                  health.TELEGRAM_CHAT_ID ? "bg-sky-500/15 text-sky-300" : "bg-white/6 text-white/35"
+                }`}
+              >
+                {health.TELEGRAM_CHAT_ID ? "chat terhubung" : "chat belum"}
+              </span>
+            </div>
+            <p className="mt-2 text-[11.5px] leading-relaxed text-white/50">
+              Web dan Telegram memakai database yang sama — job yang dibuat dari chat langsung muncul di
+              dashboard, dan notifikasi render selesai dikirim ke chat.
+            </p>
+            <div className="mt-3 grid gap-1 text-[11px] text-white/45">
+              <code className="rounded bg-black/40 px-2 py-1">/generate video tips mikrofon podcaster</code>
+              <code className="rounded bg-black/40 px-2 py-1">/jobs · /job &lt;id&gt; · /status · /posts · /ref &lt;url&gt;</code>
+            </div>
+            <ol className="mt-3 flex list-decimal flex-col gap-1 pl-4 text-[11px] leading-relaxed text-white/40">
+              <li>Buat bot via @BotFather, salin token ke <code className="text-white/60">TELEGRAM_BOT_TOKEN</code>.</li>
+              <li>Kirim <code className="text-white/60">/id</code> ke bot, isi <code className="text-white/60">TELEGRAM_CHAT_ID</code>.</li>
+              <li>Lokal: <code className="text-white/60">npm run telegram:poll</code>. Produksi: <code className="text-white/60">npm run telegram:setup</code>.</li>
+            </ol>
+          </Card>
+
+          <Card className="p-5">
+            <div className="flex items-center gap-2">
               <Cpu className="size-4 text-sky-300" />
               <h2 className="text-sm font-semibold text-white/85">Mode saat ini</h2>
             </div>
             <p className="mt-2 text-[11.5px] leading-relaxed text-white/50">
               Aplikasi berjalan dalam <strong className="text-white/80">mode lokal</strong>: generator script dan
               storyboard aktif penuh, sementara render video serta upload disimulasikan. Data disimpan di{" "}
-              <code className="rounded bg-white/8 px-1">data/db.json</code>.
+              <code className="rounded bg-white/8 px-1">PostgreSQL</code> via Prisma.
             </p>
             <ul className="mt-3 flex flex-col gap-1.5 text-[11px] text-white/45">
-              <li>• Tanpa database eksternal — cukup filesystem.</li>
+              <li>• Data persisten di PostgreSQL (job, referensi, akun, jadwal).</li>
               <li>• Pipeline job maju otomatis berdasarkan waktu.</li>
               <li>• Metadata referensi diambil dari oEmbed resmi / Open Graph website.</li>
               <li>• Upload, render, dan TTS aktif otomatis setelah kunci API diisi.</li>

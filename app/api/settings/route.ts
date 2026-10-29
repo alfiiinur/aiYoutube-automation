@@ -2,7 +2,14 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-const ENV_KEYS = ["OPENAI_API_KEY", "YOUTUBE_CLIENT_ID", "RENDER_API_KEY", "ELEVENLABS_API_KEY"];
+const ENV_KEYS = [
+  "OPENAI_API_KEY",
+  "YOUTUBE_CLIENT_ID",
+  "RENDER_API_KEY",
+  "ELEVENLABS_API_KEY",
+  "TELEGRAM_BOT_TOKEN",
+  "TELEGRAM_CHAT_ID",
+];
 
 export async function GET() {
   const connected: Record<string, boolean> = {};

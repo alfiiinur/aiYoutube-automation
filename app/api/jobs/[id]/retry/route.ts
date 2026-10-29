@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { mutate } from "@/app/lib/store";
+import { prisma, jsonValue, toVideoJob } from "@/app/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -7,18 +7,22 @@ type Ctx = { params: Promise<{ id: string }> };
 
 export async function POST(_req: Request, { params }: Ctx) {
   const { id } = await params;
-  const job = await mutate((db) => {
-    const j = db.jobs.find((x) => x.id === id);
-    if (!j) return null;
-    const now = Date.now();
-    j.status = "queued";
-    j.progress = 1;
-    j.createdAt = now;
-    j.updatedAt = now;
-    j.logs = [{ at: now, message: "Render diulang dari awal" }];
-    delete j.error;
-    return j;
+  const now = Date.now();
+
+  const { count } = await prisma.videoJob.updateMany({
+    where: { id },
+    data: {
+      status: "queued",
+      progress: 1,
+      createdAt: new Date(now),
+      updatedAt: new Date(now),
+      logs: jsonValue([{ at: now, message: "Render diulang dari awal" }]),
+      error: null,
+    },
   });
-  if (!job) return NextResponse.json({ error: "Job tidak ditemukan" }, { status: 404 });
-  return NextResponse.json({ job });
+
+  if (count === 0) return NextResponse.json({ error: "Job tidak ditemukan" }, { status: 404 });
+
+  const row = await prisma.videoJob.findUniqueOrThrow({ where: { id } });
+  return NextResponse.json({ job: toVideoJob(row) });
 }

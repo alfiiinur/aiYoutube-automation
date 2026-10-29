@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
-import { getDb, mutate, newId } from "@/app/lib/store";
+import { prisma, referenceCreateData, toReference } from "@/app/lib/db";
+import { newId } from "@/app/lib/store";
 import { analyzeReference, detectPlatform } from "@/app/lib/reference";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const db = await getDb();
-  return NextResponse.json({
-    references: [...db.references].sort((a, b) => b.createdAt - a.createdAt),
-  });
+  const rows = await prisma.referenceSource.findMany({ orderBy: { createdAt: "desc" } });
+  return NextResponse.json({ references: rows.map(toReference) });
 }
 
 export async function POST(req: Request) {
@@ -22,16 +21,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Domain tidak dikenali" }, { status: 400 });
   }
 
-  const existing = await getDb();
-  const dup = existing.references.find((r) => r.url === url);
-  if (dup) return NextResponse.json({ reference: dup, duplicate: true });
+  const dup = await prisma.referenceSource.findUnique({ where: { url } });
+  if (dup) return NextResponse.json({ reference: toReference(dup), duplicate: true });
 
   const analyzed = await analyzeReference(url);
-  const reference = await mutate((db) => {
-    const created = { ...analyzed, id: newId("ref"), createdAt: Date.now() };
-    db.references.unshift(created);
-    return created;
+  const row = await prisma.referenceSource.create({
+    data: referenceCreateData({ ...analyzed, id: newId("ref"), createdAt: Date.now() }),
   });
 
-  return NextResponse.json({ reference }, { status: 201 });
+  return NextResponse.json({ reference: toReference(row) }, { status: 201 });
 }

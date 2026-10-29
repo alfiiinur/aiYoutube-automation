@@ -1,40 +1,9 @@
-import { promises as fs } from "fs";
-import path from "path";
-import type { Db, VideoJob } from "@/app/types";
+import type { VideoJob } from "@/app/types";
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const DB_PATH = path.join(DATA_DIR, "db.json");
+/* ---------------- ids ---------------- */
 
-const EMPTY: Db = { jobs: [], references: [], automations: [], socialAccounts: [], posts: [] };
-
-let queue: Promise<unknown> = Promise.resolve();
-
-/** Serialize all writes so concurrent requests can't clobber the JSON file. */
-function withLock<T>(fn: () => Promise<T>): Promise<T> {
-  const run = queue.then(fn, fn);
-  queue = run.catch(() => undefined);
-  return run;
-}
-
-async function readRaw(): Promise<Db> {
-  try {
-    const txt = await fs.readFile(DB_PATH, "utf8");
-    const parsed = JSON.parse(txt) as Partial<Db>;
-    return {
-      jobs: parsed.jobs ?? [],
-      references: parsed.references ?? [],
-      automations: parsed.automations ?? [],
-      socialAccounts: parsed.socialAccounts ?? [],
-      posts: parsed.posts ?? [],
-    };
-  } catch {
-    return { ...EMPTY };
-  }
-}
-
-async function writeRaw(db: Db): Promise<void> {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  await fs.writeFile(DB_PATH, JSON.stringify(db, null, 2), "utf8");
+export function newId(prefix: string): string {
+  return `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
 }
 
 /* ---------------- pipeline simulation ---------------- */
@@ -54,6 +23,9 @@ function progressFor(elapsedSec: number) {
 /**
  * Jobs advance automatically based on wall-clock time, so the UI feels live
  * without needing a background worker or external queue.
+ *
+ * This is a pure projection over the stored row: the database keeps the last
+ * persisted state and callers decide when the projection is written back.
  */
 export function evolve(job: VideoJob): VideoJob {
   if (job.status === "ready" || job.status === "failed") return job;
@@ -78,23 +50,6 @@ export function evolve(job: VideoJob): VideoJob {
   };
 }
 
-/* ---------------- public API ---------------- */
-
-export async function getDb(): Promise<Db> {
-  const db = await readRaw();
-  return { ...db, jobs: db.jobs.map(evolve) };
-}
-
-export async function mutate<T>(fn: (db: Db) => T | Promise<T>): Promise<T> {
-  return withLock(async () => {
-    const db = await readRaw();
-    db.jobs = db.jobs.map(evolve);
-    const result = await fn(db);
-    await writeRaw(db);
-    return result;
-  });
-}
-
-export function newId(prefix: string): string {
-  return `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
+export function evolveAll(jobs: VideoJob[]): VideoJob[] {
+  return jobs.map(evolve);
 }

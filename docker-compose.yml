@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: studio-yt-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: studio
+      POSTGRES_PASSWORD: studio
+      POSTGRES_DB: studio_yt
+    ports:
+      - "5432:5432"
+    volumes:
+      - studio_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U studio -d studio_yt"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  studio_pgdata:

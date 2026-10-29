@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getDb, mutate, newId } from "@/app/lib/store";
+import { prisma, automationCreateData, toAutomation } from "@/app/lib/db";
+import { newId } from "@/app/lib/store";
 import type { Automation } from "@/app/types";
 
 export const dynamic = "force-dynamic";
@@ -22,10 +23,8 @@ function nextRunFromNow(cron: string): number {
 }
 
 export async function GET() {
-  const db = await getDb();
-  return NextResponse.json({
-    automations: [...db.automations].sort((a, b) => b.createdAt - a.createdAt),
-  });
+  const rows = await prisma.automation.findMany({ orderBy: { createdAt: "desc" } });
+  return NextResponse.json({ automations: rows.map(toAutomation) });
 }
 
 export async function POST(req: Request) {
@@ -37,23 +36,20 @@ export async function POST(req: Request) {
   }
 
   const cron = String(body.cron ?? "every:1440");
-  const automation = await mutate((db) => {
-    const created: Automation = {
-      id: newId("auto"),
-      name,
-      enabled: body.enabled ?? true,
-      cron,
-      humanSchedule: String(body.humanSchedule ?? "Setiap hari, 09:00"),
-      promptTemplate,
-      platform: body.platform ?? "youtube",
-      privacy: body.privacy ?? "public",
-      runs: 0,
-      nextRunAt: nextRunFromNow(cron),
-      createdAt: Date.now(),
-    };
-    db.automations.unshift(created);
-    return created;
-  });
+  const created: Automation = {
+    id: newId("auto"),
+    name,
+    enabled: body.enabled ?? true,
+    cron,
+    humanSchedule: String(body.humanSchedule ?? "Setiap hari, 09:00"),
+    promptTemplate,
+    platform: body.platform ?? "youtube",
+    privacy: body.privacy ?? "public",
+    runs: 0,
+    nextRunAt: nextRunFromNow(cron),
+    createdAt: Date.now(),
+  };
 
-  return NextResponse.json({ automation }, { status: 201 });
+  const row = await prisma.automation.create({ data: automationCreateData(created) });
+  return NextResponse.json({ automation: toAutomation(row) }, { status: 201 });
 }
