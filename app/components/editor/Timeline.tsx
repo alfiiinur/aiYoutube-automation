@@ -28,12 +28,12 @@ import { MIN_CLIP, clamp, fmtRuler, fmtTime } from "@/app/lib/editor";
 
 const LABEL_W = 96;
 const CLIP_PALETTES = [
-  ["#3b1d2b", "#f43f5e"],
-  ["#13293d", "#38bdf8"],
-  ["#332412", "#f59e0b"],
-  ["#1c2f1d", "#a3e635"],
-  ["#291a3b", "#a78bfa"],
-  ["#341a24", "#f472b6"],
+  ["#232326", "#e5e5e5"],
+  ["#1b1b1e", "#fafafa"],
+  ["#26262b", "#d4d4d4"],
+  ["#1e1e21", "#f5f5f5"],
+  ["#17171a", "#ececef"],
+  ["#141416", "#e4e4e7"],
 ];
 
 type DragTrack = "clip" | "caption" | "overlay";
@@ -48,7 +48,7 @@ function Waveform({ seed, tone = "voice" }: { seed: number; tone?: "voice" | "mu
       return { x: i, h };
     });
   }, [seed]);
-  const color = tone === "voice" ? "rgba(196,181,253,0.65)" : "rgba(190,242,100,0.7)";
+  const color = tone === "voice" ? "rgba(229,229,229,0.65)" : "rgba(163,163,163,0.7)";
   return (
     <svg
       className="pointer-events-none absolute inset-0 h-full w-full"
@@ -485,10 +485,10 @@ export default function Timeline({
               })}
               {draggingClip && clipMarker !== null && (
                 <div
-                  className="pointer-events-none absolute inset-y-0 z-30 w-0.5 bg-brand-400 shadow-[0_0_8px_rgba(244,63,94,0.8)]"
+                  className="pointer-events-none absolute inset-y-0 z-30 w-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.7)]"
                   style={{ left: clipMarker * pps }}
                 >
-                  <span className="absolute -top-0.5 left-1 whitespace-nowrap rounded bg-brand-500 px-1 py-0.5 text-[8px] font-medium text-white">
+                  <span className="absolute -top-0.5 left-1 whitespace-nowrap rounded bg-white px-1 py-0.5 text-[8px] font-medium text-black">
                     lepas
                   </span>
                 </div>

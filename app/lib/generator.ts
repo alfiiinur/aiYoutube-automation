@@ -85,6 +85,15 @@ export function generateJobContent(input: {
     const fmt = (s: number) =>
       `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
     const beat = beats[i] ?? "Detail";
+    const topic = kw[i % kw.length] ?? subject;
+    const narration = [
+      `Sebelum lanjut, ini konteks singkat soal ${subject}.`,
+      `Masalah yang paling sering muncul justru soal ${topic}.`,
+      `Solusinya, mulai dari langkah kecil: ${topic}.`,
+      `Coba bandingkan hasilnya sebelum dan sesudah menerapkan ${topic}.`,
+      `Terapkan sekarang, jangan menunggu sampai semuanya sempurna.`,
+      `Intinya, ${subject} lebih soal konsistensi daripada alat yang mahal.`,
+    ];
     return {
       index: i + 1,
       timecode: `${fmt(start)}–${fmt(start + per)}`,
@@ -98,8 +107,11 @@ export function generateJobContent(input: {
       voiceover:
         i === 0
           ? hook
-          : `Poin ${i}: ${kw[i % kw.length] ?? subject} — jelaskan dalam 1 kalimat utuh, lalu beri contoh konkret.`,
+          : i === sceneCount - 1
+            ? "Kalau ini bermanfaat, follow dan simpan video ini supaya kamu tidak ketinggalan part berikutnya."
+            : narration[(i - 1) % narration.length],
       broll: ["screen capture", "close-up produk", "timelapse", "tangan menulis", "grafik bergerak"][i % 5],
+      imagePrompt: `${beat} scene about ${subject} (${angle}), ${style} style, vertical ${aspectRatio} composition, ${visualNote}`,
     };
   });
 

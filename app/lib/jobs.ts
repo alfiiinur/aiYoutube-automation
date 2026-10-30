@@ -2,9 +2,19 @@ import { prisma, jobCreateData, jsonValue, toReference, toVideoJob } from "@/app
 import { evolve, newId } from "@/app/lib/store";
 import { generateJobContent } from "@/app/lib/generator";
 import { notifyJobReady } from "@/app/lib/telegram";
-import type { AspectRatio, VideoJob } from "@/app/types";
+import type { AspectRatio, EditorMedia, VideoJob } from "@/app/types";
 
 export const ASPECT_RATIOS: AspectRatio[] = ["9:16", "16:9", "1:1", "4:5"];
+
+export const MIN_DURATION_SEC = 10;
+export const MAX_DURATION_SEC = 600; // 10 menit
+
+/** Samakan batas durasi untuk job & skill prompt. */
+export function clampDurationSec(value: unknown, fallback = 45): number {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(MIN_DURATION_SEC, Math.min(MAX_DURATION_SEC, Math.round(n)));
+}
 
 export type NewJobInput = {
   prompt: string;
@@ -14,7 +24,34 @@ export type NewJobInput = {
   style?: string;
   voice?: string;
   model?: string;
+  media?: unknown;
 };
+
+/** Hanya izinkan aset hasil upload internal (/api/uploads/...). */
+function sanitizeMedia(input: unknown): EditorMedia[] {
+  if (!Array.isArray(input)) return [];
+  return input.slice(0, 20).flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const m = item as Partial<EditorMedia>;
+    if (typeof m.url !== "string" || !m.url.startsWith("/api/uploads/")) return [];
+    if (m.kind !== "video" && m.kind !== "image" && m.kind !== "audio") return [];
+    const size = typeof m.size === "number" && Number.isFinite(m.size) ? m.size : undefined;
+    const duration =
+      typeof m.duration === "number" && Number.isFinite(m.duration) && m.duration > 0
+        ? Math.min(m.duration, 3600)
+        : undefined;
+    return [
+      {
+        url: m.url.slice(0, 500),
+        name: String(m.name ?? "Media").slice(0, 160),
+        kind: m.kind,
+        mime: String(m.mime ?? "").slice(0, 100),
+        size,
+        duration,
+      },
+    ];
+  });
+}
 
 /** Buat job baru — dipakai oleh API web dan bot Telegram. */
 export async function createJob(input: NewJobInput): Promise<VideoJob> {
@@ -23,12 +60,11 @@ export async function createJob(input: NewJobInput): Promise<VideoJob> {
   const aspectRatio = ASPECT_RATIOS.includes(input.aspectRatio as AspectRatio)
     ? (input.aspectRatio as AspectRatio)
     : "9:16";
-  const durationSec = Number.isFinite(Number(input.durationSec))
-    ? Math.max(10, Math.min(180, Number(input.durationSec)))
-    : 45;
+  const durationSec = clampDurationSec(input.durationSec);
   const style = String(input.style ?? "cinematic");
   const voice = String(input.voice ?? "female-id");
   const model = String(input.model ?? "studio-v1");
+  const media = sanitizeMedia(input.media);
 
   const referenceRows = referenceIds.length
     ? await prisma.referenceSource.findMany({ where: { id: { in: referenceIds } } })
@@ -59,6 +95,7 @@ export async function createJob(input: NewJobInput): Promise<VideoJob> {
     createdAt: now,
     updatedAt: now,
     ...content,
+    media,
     logs: [{ at: now, message: "Job dibuat, masuk antrean render" }],
   };
 

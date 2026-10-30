@@ -153,7 +153,7 @@ export default function ScheduleModal({
                 disabled={disabled}
                 className={`relative grid h-9 place-items-center rounded-lg text-xs transition ${
                   active
-                    ? "bg-gradient-to-br from-brand-500 to-accent-500 font-medium text-white shadow-lg shadow-brand-500/20"
+                    ? "bg-white font-medium text-black"
                     : disabled
                       ? "cursor-not-allowed text-white/15"
                       : "text-white/70 hover:bg-white/8 hover:text-white"
@@ -205,7 +205,7 @@ export default function ScheduleModal({
           </button>
           <button
             onClick={confirm}
-            className="rounded-xl bg-gradient-to-r from-brand-500 to-accent-500 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-brand-500/25 transition hover:brightness-110"
+            className="rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-black transition hover:bg-white/85"
           >
             Simpan jadwal
           </button>

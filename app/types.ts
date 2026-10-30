@@ -23,6 +23,8 @@ export interface StoryboardScene {
   onScreenText: string;
   voiceover: string;
   broll: string;
+  imageUrl?: string;
+  imagePrompt?: string;
 }
 
 /* ---------------- video editor ---------------- */
@@ -44,6 +46,7 @@ export interface EditorMedia {
   kind: EditorMediaKind;
   mime: string;
   size?: number;
+  duration?: number;
 }
 
 export interface EditorClip {
@@ -54,6 +57,8 @@ export interface EditorClip {
   title: string;
   visual: string;
   broll: string;
+  /** Narasi voice over yang dibacakan saat klip ini tampil. */
+  voiceover?: string;
   media?: EditorMedia;
 }
 
@@ -133,6 +138,87 @@ export interface VideoJob {
   logs: { at: number; message: string }[];
   error?: string;
   editor?: EditorProject;
+  media: EditorMedia[];
+}
+
+export interface PromptSkill {
+  id: string;
+  prompt: string;
+  series?: string;
+  part?: number;
+  aspectRatio: AspectRatio;
+  durationSec: number;
+  style: string;
+  voice: string;
+  model: string;
+  useCount: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export type GoalMetric = "videos_ready" | "posts_sent";
+
+export interface Goal {
+  id: string;
+  title: string;
+  metric: GoalMetric;
+  target: number;
+  deadline?: string; // ISO
+  completedAt?: number;
+  createdAt: number;
+  updatedAt: number;
+  plan?: GoalPlan;
+}
+
+export interface GoalPlanItem {
+  id: string;
+  title: string;
+  prompt: string;
+  angle?: string;
+  /** Hari ke-n dari pembuatan rencana (mulai 1). */
+  dayOffset: number;
+  scheduledAt?: string; // ISO
+  status: "planned" | "generated";
+  jobId?: string;
+}
+
+export interface GoalPlan {
+  items: GoalPlanItem[];
+  source: "ai" | "local";
+  createdAt: number;
+  notice?: string;
+}
+
+export interface GoalWithProgress extends Goal {
+  progress: number;
+  reached: boolean;
+  overdue: boolean;
+}
+
+export interface GoalChatMessage {
+  role: "user" | "assistant";
+  text: string;
+  at: number;
+}
+
+/** Snapshot status wizard builder agar chat bisa dilanjutkan. */
+export interface GoalChatSnapshot {
+  categoryId: string | null;
+  customStart: boolean;
+  outcome: string | null;
+  goalTarget: number | null;
+  deadlineChoice: { id: string; label: string; iso?: string; dateLabel?: string } | null;
+  step: string;
+}
+
+export interface GoalChat {
+  id: string;
+  title: string;
+  snapshot: GoalChatSnapshot;
+  transcript: GoalChatMessage[];
+  goalId?: string;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export type SocialPlatform = "threads" | "instagram" | "facebook";
@@ -163,6 +249,19 @@ export interface SocialPost {
   postUrl?: string;
   simulated: boolean;
   error?: string;
+  createdAt: number;
+}
+
+export const NOTE_COLOR_IDS = ["yellow", "pink", "green", "blue", "purple"] as const;
+
+export type NoteColor = (typeof NOTE_COLOR_IDS)[number];
+
+export interface ScheduleNote {
+  id: string;
+  /** Tanggal lokal YYYY-MM-DD. */
+  day: string;
+  text: string;
+  color: NoteColor;
   createdAt: number;
 }
 

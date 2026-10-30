@@ -1,26 +1,22 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Aperture,
   Captions as CaptionsIcon,
   Pause,
   Play,
+  Mic,
   SkipBack,
   SkipForward,
   Volume2,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import type { EditorCaption, EditorOverlay, EditorProject, VideoJob } from "@/app/types";
 import { fmtTime } from "@/app/lib/editor";
-
-const PALETTES = [
-  { from: "#2b1a3d", to: "#120d1c", glow: "rgba(244,63,94,0.45)", accent: "#ff6b8a" },
-  { from: "#122c3c", to: "#0a131c", glow: "rgba(56,189,248,0.35)", accent: "#7dd3fc" },
-  { from: "#2f2114", to: "#171008", glow: "rgba(245,158,11,0.35)", accent: "#fbbf24" },
-  { from: "#1b2b1e", to: "#0b130d", glow: "rgba(163,230,53,0.32)", accent: "#bef264" },
-  { from: "#261634", to: "#130b1b", glow: "rgba(167,139,250,0.4)", accent: "#c4b5fd" },
-  { from: "#301a22", to: "#170c11", glow: "rgba(244,114,182,0.32)", accent: "#f9a8d4" },
-];
+import { storyboardImageUrl } from "@/app/lib/storyboard-image";
+import { isMonochrome, paletteAt } from "@/app/lib/visual-palette";
 
 function captionClass(caption: EditorCaption, playing: boolean, playhead: number) {
   const base =
@@ -80,7 +76,7 @@ function ActiveOverlay({ overlay }: { overlay: EditorOverlay }) {
     );
   }
   return (
-    <div className="pointer-events-none absolute right-3 top-[13%] max-w-[60%] truncate rounded-full bg-brand-500/90 px-2.5 py-1 text-[9px] font-semibold text-white shadow-lg shadow-brand-500/30">
+    <div className="pointer-events-none absolute right-3 top-[13%] max-w-[60%] truncate rounded-full bg-white px-2.5 py-1 text-[9px] font-semibold text-black">
       {overlay.text}
     </div>
   );
@@ -108,7 +104,47 @@ export default function PreviewStage({
   const wrapRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const musicRef = useRef<HTMLAudioElement>(null);
+  const voiceRef = useRef<HTMLAudioElement>(null);
   const [box, setBox] = useState({ w: 0, h: 0 });
+  const [voiceError, setVoiceError] = useState(false);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await stageRef.current?.requestFullscreen();
+    } catch {
+      /* abaikan: browser menolak atau tidak mendukung fullscreen */
+    }
+  }, []);
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(document.fullscreenElement != null);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  /* Tombol F untuk layar penuh (bebas bentrok dengan shortcut editor). */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() !== "f" || e.ctrlKey || e.metaKey || e.altKey) return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      e.preventDefault();
+      void toggleFullscreen();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [toggleFullscreen]);
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -145,10 +181,34 @@ export default function PreviewStage({
 
   const activeOverlays = project.overlays.filter((o) => playhead >= o.start && playhead < o.end);
 
-  const palette = PALETTES[((activeClip?.sceneIndex ?? 1) - 1) % PALETTES.length];
+  const storyboardScene =
+    job.scenes?.find((s) => s.index === activeClip?.sceneIndex) ?? job.scenes?.[0];
+  const palette = paletteAt(
+    activeClip?.sceneIndex ?? 1,
+    isMonochrome(
+      job.prompt,
+      job.style,
+      activeClip?.visual,
+      storyboardScene?.visual,
+      storyboardScene?.onScreenText,
+      storyboardScene?.imagePrompt,
+    ),
+  );
+  const storyboardFallback = storyboardScene
+    ? storyboardImageUrl(job, storyboardScene, job.scenes?.length ?? 1)
+    : null;
   const sceneCount = Math.max(1, project.clips.length);
   const progress = Math.min(100, (playhead / Math.max(0.1, project.duration)) * 100);
   const musicUrl = project.music.file?.url;
+  const voiceText = (
+    activeClip?.voiceover ||
+    (activeClip?.media
+      ? ""
+      : job.scenes?.find((s) => s.index === activeClip?.sceneIndex)?.voiceover ?? "")
+  ).trim();
+  const voiceSrc = voiceText
+    ? `/api/tts?${new URLSearchParams({ text: voiceText, voice: job.voice }).toString()}`
+    : null;
 
   /* Keep imported video in sync with the timeline playhead. */
   useEffect(() => {
@@ -183,12 +243,63 @@ export default function PreviewStage({
     else audio.pause();
   }, [playhead, playing, musicUrl, project.music.volume]);
 
+  /* Voiceover aktif mengikuti klip di playhead. */
+  useEffect(() => {
+    const audio = voiceRef.current;
+    if (!audio || !voiceSrc || !activeClip) return;
+    audio.volume = Math.min(1, Math.max(0, project.voiceVolume / 100));
+    const target = Math.max(0, playhead - activeClip.start);
+    if (audio.readyState >= 1) {
+      const max = Number.isFinite(audio.duration) ? audio.duration : target + 1;
+      if (Math.abs(audio.currentTime - Math.min(target, max)) > 0.6) {
+        try {
+          audio.currentTime = Math.min(target, max);
+        } catch {
+          /* metadata belum siap */
+        }
+      }
+    }
+    if (playing) void audio.play().catch(() => undefined);
+    else audio.pause();
+  }, [playhead, playing, voiceSrc, activeClip, project.voiceVolume]);
+
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div
+      ref={stageRef}
+      className={`flex h-full min-h-0 flex-col ${isFullscreen ? "bg-black" : ""}`}
+    >
       {musicUrl && <audio ref={musicRef} src={musicUrl} loop preload="auto" className="hidden" />}
-      <div ref={wrapRef} className="flex min-h-0 flex-1 items-center justify-center px-5 py-3">
+      {voiceSrc && (
+        <audio
+          key={voiceSrc}
+          ref={voiceRef}
+          src={voiceSrc}
+          preload="auto"
+          className="hidden"
+          onError={() => setVoiceError(true)}
+          onLoadedData={() => setVoiceError(false)}
+        />
+      )}
+      <div ref={wrapRef} className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden px-5 py-3">
         <div
-          className="relative shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-ink-900 shadow-2xl shadow-black/50"
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)",
+            backgroundSize: "44px 44px",
+            maskImage: "radial-gradient(ellipse 90% 90% at 50% 50%, black 25%, transparent 80%)",
+            WebkitMaskImage: "radial-gradient(ellipse 90% 90% at 50% 50%, black 25%, transparent 80%)",
+          }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-1/2 h-[75%] w-[75%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/[0.05] blur-3xl"
+        />
+        <div
+          className="relative z-10 shrink-0 cursor-pointer overflow-hidden rounded-2xl border border-white/10 bg-ink-900 shadow-2xl shadow-black/50"
+          onDoubleClick={() => void toggleFullscreen()}
+          title="Klik dua kali untuk layar penuh"
           style={{ width: Math.max(0, frameW), height: Math.max(0, frameH) }}
         >
           <div
@@ -210,6 +321,14 @@ export default function PreviewStage({
             style={{ background: palette.glow }}
           />
 
+          {!activeClip?.media && storyboardFallback && (
+            <img
+              src={storyboardFallback}
+              alt={`Storyboard scene ${activeClip?.sceneIndex ?? 1}`}
+              draggable={false}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          )}
           {activeClip?.media?.kind === "image" && (
             <img
               src={activeClip.media.url}
@@ -246,7 +365,7 @@ export default function PreviewStage({
               </div>
             </div>
 
-            <div className="flex flex-1 items-center justify-center">
+            <div className={`flex flex-1 items-center justify-center ${!activeClip?.media && storyboardFallback ? "invisible" : ""}`}>
               <div className="relative grid size-28 place-items-center">
                 <div
                   className="absolute inset-0 rounded-[28%] border border-white/15"
@@ -276,7 +395,7 @@ export default function PreviewStage({
           {activeCaption && <ActiveCaption caption={activeCaption} playhead={playhead} playing={playing} />}
 
           <div className="absolute inset-x-0 bottom-0 h-0.5 bg-white/10">
-            <div className="h-full bg-gradient-to-r from-brand-500 to-accent-400" style={{ width: `${progress}%` }} />
+            <div className="h-full bg-white" style={{ width: `${progress}%` }} />
           </div>
         </div>
       </div>
@@ -318,9 +437,19 @@ export default function PreviewStage({
         <div className="ml-2 hidden items-center gap-1.5 text-[10px] text-white/30 sm:flex">
           <kbd className="rounded border border-white/12 bg-white/5 px-1.5 py-0.5 font-sans">Spasi</kbd>
           putar / jeda
+          <kbd className="ml-2 rounded border border-white/12 bg-white/5 px-1.5 py-0.5 font-sans">F</kbd>
+          layar penuh
         </div>
 
-        <div className="ml-auto flex items-center gap-1 text-[10px] text-white/30">
+        <div className="ml-auto flex items-center gap-2 text-[10px] text-white/30">
+          <button
+            onClick={() => void toggleFullscreen()}
+            className="grid size-7 place-items-center rounded-md transition hover:bg-white/8 hover:text-white"
+            title={isFullscreen ? "Keluar layar penuh (F)" : "Layar penuh (F)"}
+            aria-label={isFullscreen ? "Keluar layar penuh" : "Layar penuh"}
+          >
+            {isFullscreen ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />}
+          </button>
           <button
             onClick={() => onSeek(Math.max(0, playhead - 5))}
             className="grid size-7 place-items-center rounded-md transition hover:bg-white/8 hover:text-white"
@@ -328,6 +457,21 @@ export default function PreviewStage({
           >
             <span className="-scale-x-100 text-[10px]">↺</span>
           </button>
+          <span
+            className={`inline-flex items-center gap-1 ${
+              voiceError ? "text-white underline decoration-white/40 underline-offset-2" : voiceSrc ? "text-white/60" : ""
+            }`}
+            title={
+              !voiceSrc
+                ? "Scene ini belum punya narasi voice over"
+                : voiceError
+                  ? "Voice over gagal dimuat"
+                  : "Voice over aktif"
+            }
+          >
+            <Mic className="size-3.5" />
+            {voiceError ? "VO gagal" : voiceSrc ? "VO" : "VO off"}
+          </span>
           <Volume2 className="size-3.5" />
           <span className="tabular-nums">{project.voiceVolume}</span>
         </div>

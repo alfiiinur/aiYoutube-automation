@@ -11,12 +11,12 @@ export function Card({
 }
 
 const STATUS_STYLES: Record<JobStatus, { label: string; cls: string; dot: string }> = {
-  queued: { label: "Antre", cls: "bg-white/8 text-white/60", dot: "bg-white/40" },
-  analyzing: { label: "Analisis", cls: "bg-sky-500/15 text-sky-300", dot: "bg-sky-400" },
-  scripting: { label: "Scripting", cls: "bg-accent-500/15 text-accent-400", dot: "bg-accent-400" },
-  rendering: { label: "Rendering", cls: "bg-amber-500/15 text-amber-300", dot: "bg-amber-400" },
-  ready: { label: "Siap", cls: "bg-lime-500/15 text-lime-300", dot: "bg-lime-400" },
-  failed: { label: "Gagal", cls: "bg-brand-500/15 text-brand-400", dot: "bg-brand-400" },
+  queued: { label: "Antre", cls: "bg-white/8 text-white/55", dot: "bg-white/35" },
+  analyzing: { label: "Analisis", cls: "bg-white/10 text-white/75", dot: "bg-white/55" },
+  scripting: { label: "Scripting", cls: "bg-white/12 text-white/80", dot: "bg-white/70" },
+  rendering: { label: "Rendering", cls: "bg-white/14 text-white/85", dot: "bg-white/80" },
+  ready: { label: "Siap", cls: "bg-white text-black", dot: "bg-black" },
+  failed: { label: "Gagal", cls: "border border-white/25 bg-transparent text-white/70", dot: "bg-white/40" },
 };
 
 export function StatusBadge({ status }: { status: JobStatus }) {
@@ -30,12 +30,11 @@ export function StatusBadge({ status }: { status: JobStatus }) {
 }
 
 export function ProgressBar({ value, tone = "brand" }: { value: number; tone?: "brand" | "lime" }) {
+  void tone;
   return (
     <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/8">
       <div
-        className={`h-full rounded-full transition-all duration-700 ${
-          tone === "lime" ? "bg-lime-400" : "bg-gradient-to-r from-brand-500 to-accent-500"
-        }`}
+        className="h-full rounded-full bg-white transition-all duration-700"
         style={{ width: `${Math.max(2, Math.min(100, value))}%` }}
       />
     </div>

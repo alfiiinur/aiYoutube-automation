@@ -163,11 +163,11 @@ export function greetingMessage(job: VideoJob): EditorChatMessage {
 }
 
 export function buildDefaultProject(job: VideoJob): EditorProject {
-  const duration = Math.max(5, job.durationSec);
+  let duration = Math.max(5, job.durationSec);
   const scenes = job.scenes ?? [];
   const count = Math.max(1, scenes.length);
 
-  const clips: EditorClip[] = reflowClips(
+  let clips: EditorClip[] = reflowClips(
     scenes.map((scene, i) => {
       const { start, end } = sceneTiming(scene, i, count, duration);
       return {
@@ -178,9 +178,35 @@ export function buildDefaultProject(job: VideoJob): EditorProject {
         title: sceneLabel(scene, i),
         visual: scene.visual,
         broll: scene.broll,
+        voiceover: scene.voiceover,
       };
     }),
   );
+
+  // Media yang diimpor dari halaman Generate: visual jadi klip tambahan,
+  // audio pertama jadi musik latar.
+  const attached = job.media ?? [];
+  const firstAudio = attached.find((m) => m.kind === "audio");
+  const attachedVisuals = attached.filter((m) => m.kind !== "audio");
+  if (attachedVisuals.length > 0) {
+    let sceneIndex = clips.reduce((max, clip) => Math.max(max, clip.sceneIndex), 0);
+    const extra: EditorClip[] = attachedVisuals.map((m, i) => {
+      const length = m.kind === "image" ? 3.5 : clamp(m.duration ?? 5, 1, MAX_CLIP);
+      sceneIndex += 1;
+      return {
+        id: uid("clip"),
+        sceneIndex,
+        start: 0,
+        end: length,
+        title: m.name.replace(/\.[^.]+$/, "").slice(0, 34) || `Media ${i + 1}`,
+        visual: `Media impor: ${m.name}`,
+        broll: m.kind === "video" ? "video" : "gambar",
+        media: m,
+      };
+    });
+    clips = reflowClips([...clips, ...extra]);
+    duration = Math.max(duration, clipsEnd(clips));
+  }
 
   const captions: EditorCaption[] = clips.map((clip, i) => {
     const scene = scenes[i];
@@ -218,7 +244,13 @@ export function buildDefaultProject(job: VideoJob): EditorProject {
     clips,
     captions,
     overlays,
-    music: defaultMusic(job),
+    music: firstAudio
+      ? {
+          ...defaultMusic(job),
+          title: firstAudio.name.replace(/\.[^.]+$/, "").slice(0, 42) || "Musik impor",
+          file: firstAudio,
+        }
+      : defaultMusic(job),
     voiceVolume: 88,
     captionsEnabled: true,
     chat: [greetingMessage(job)],
@@ -254,16 +286,21 @@ export function normalizeProject(saved: EditorProject | undefined, job: VideoJob
 
   const clips = Array.isArray(saved.clips)
     ? reflowClips(
-        saved.clips.map((c, i) => ({
-          id: String(c.id || uid("clip")),
-          sceneIndex: safeNumber(c.sceneIndex, i + 1),
-          start: clamp(safeNumber(c.start, i), 0, timelineDuration),
-          end: clamp(safeNumber(c.end, i + 1), 0.3, timelineDuration),
-          title: String(c.title || `Scene ${i + 1}`),
-          visual: String(c.visual || ""),
-          broll: String(c.broll || "b-roll"),
-          media: safeMedia(c.media),
-        })),
+        saved.clips.map((c, i) => {
+          const sceneIndex = safeNumber(c.sceneIndex, i + 1);
+          const scene = job.scenes?.find((s) => s.index === sceneIndex);
+          return {
+            id: String(c.id || uid("clip")),
+            sceneIndex,
+            start: clamp(safeNumber(c.start, i), 0, timelineDuration),
+            end: clamp(safeNumber(c.end, i + 1), 0.3, timelineDuration),
+            title: String(c.title || `Scene ${i + 1}`),
+            visual: String(c.visual || ""),
+            broll: String(c.broll || "b-roll"),
+            voiceover: String(c.voiceover ?? "").slice(0, 600) || scene?.voiceover || "",
+            media: safeMedia(c.media),
+          };
+        }),
       )
     : base.clips;
 

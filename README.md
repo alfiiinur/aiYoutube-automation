@@ -5,6 +5,9 @@ Dashboard untuk mengotomatiskan produksi video YouTube/Short: tulis prompt, temp
 ## Fitur
 - **Dashboard** — ringkasan pipeline, job terbaru, referensi per platform
 - **Generate Video** — prompt + referensi link, pilihan aspect ratio, durasi, gaya, voice, model
+- **Skill Prompt** — riwayat prompt + serial ber-part, cari dengan "/" di kolom prompt, konfirmasi simpan tiap generate
+- **Chats** — sidebar riwayat generate di halaman Generate (tersimpan di database job): chat baru, cari, muat ulang, hapus
+- **Goals** — susun goal lewat percakapan (kategori → hasil → target → deadline), progres otomatis dari video siap / upload terkirim, plus centang selesai
 - **Referensi** — analisis metadata (YouTube oEmbed resmi + Open Graph) dan penyimpulan pola hook/struktur
 - **Job & Render** — daftar job, progress live, script/storyboard/caption, render ulang
 - **Editor** — timeline klip, caption, overlay, musik, dan chat editor

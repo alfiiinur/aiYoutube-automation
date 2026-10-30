@@ -8,10 +8,12 @@ import {
   MessageSquare,
   Mic2,
   Music2,
+  Play,
   Plus,
   Send,
   SlidersHorizontal,
   Sparkles,
+  Square,
   Upload,
   Wand2,
 } from "lucide-react";
@@ -179,8 +181,8 @@ function ChatView({
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center justify-between border-b border-white/6 px-3 py-2.5">
         <div className="flex items-center gap-2">
-          <div className="grid size-7 place-items-center rounded-lg bg-gradient-to-br from-brand-500 to-accent-500 shadow-lg shadow-brand-500/20">
-            <Sparkles className="size-3.5 text-white" />
+          <div className="grid size-7 place-items-center rounded-lg bg-white">
+            <Sparkles className="size-3.5 text-black" />
           </div>
           <div className="leading-tight">
             <p className="text-[12px] font-semibold text-white/90">AI Editor</p>
@@ -196,7 +198,7 @@ function ChatView({
         {project.chat.map((m) =>
           m.role === "user" ? (
             <div key={m.id} className="flex justify-end">
-              <div className="max-w-[88%] rounded-2xl rounded-br-md bg-gradient-to-br from-brand-500/90 to-accent-500/90 px-3 py-2 text-[11.5px] leading-relaxed text-white shadow-lg shadow-brand-500/10">
+              <div className="max-w-[88%] rounded-2xl rounded-br-md bg-white px-3 py-2 text-[11.5px] leading-relaxed text-black">
                 {m.text}
               </div>
             </div>
@@ -252,7 +254,7 @@ function ChatView({
           <button
             onClick={() => submit()}
             disabled={!draft.trim() || thinking}
-            className="grid size-7 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-brand-500 to-accent-500 text-white transition hover:brightness-110 disabled:opacity-35"
+            className="grid size-7 shrink-0 place-items-center rounded-lg bg-white text-black transition hover:bg-white/85 disabled:opacity-35"
             aria-label="Kirim perintah"
           >
             <Send className="size-3.5" />
@@ -421,6 +423,90 @@ function ItemProps({
   );
 }
 
+function VoiceoverEditor({
+  clip,
+  voice,
+  volume,
+  onChange,
+}: {
+  clip: EditorClip;
+  voice: string;
+  volume: number;
+  onChange: (value: string) => void;
+}) {
+  const [state, setState] = useState<"idle" | "loading" | "playing" | "error">("idle");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    return () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = Math.min(1, Math.max(0, volume / 100));
+  }, [volume]);
+
+  const stop = () => {
+    audioRef.current?.pause();
+    audioRef.current = null;
+    setState("idle");
+  };
+
+  const preview = () => {
+    const text = (clip.voiceover ?? "").trim();
+    if (!text) return;
+    stop();
+    setState("loading");
+    const audio = new Audio(`/api/tts?${new URLSearchParams({ text, voice }).toString()}`);
+    audioRef.current = audio;
+    audio.volume = Math.min(1, Math.max(0, volume / 100));
+    audio.onplaying = () => setState("playing");
+    audio.onended = () => setState("idle");
+    audio.onerror = () => setState("error");
+    void audio.play().then(() => setState("playing")).catch(() => setState("error"));
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <label className="text-[10px] font-medium text-white/45">Narasi klip (TTS)</label>
+        <button
+          onClick={state === "playing" || state === "loading" ? stop : preview}
+          disabled={!clip.voiceover?.trim()}
+          className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/4 px-1.5 py-0.5 text-[9px] text-white/60 transition hover:bg-white/8 hover:text-white disabled:opacity-40"
+          title="Dengarkan voice over klip ini"
+        >
+          {state === "loading" ? (
+            <Loader2 className="size-2.5 animate-spin" />
+          ) : state === "playing" ? (
+            <Square className="size-2.5 fill-current" />
+          ) : (
+            <Play className="size-2.5" />
+          )}
+          {state === "playing" ? "Stop" : state === "loading" ? "Memuat…" : "Preview"}
+        </button>
+      </div>
+      <textarea
+        value={clip.voiceover ?? ""}
+        rows={4}
+        placeholder="Tulis narasi yang akan dibacakan untuk klip ini…"
+        onChange={(e) => {
+          if (state === "playing" || state === "loading") stop();
+          onChange(e.target.value);
+        }}
+        className={`${inputCls} resize-none leading-relaxed`}
+      />
+      <p className={`text-[9px] ${state === "error" ? "text-rose-300/80" : "text-white/30"}`}>
+        {state === "error"
+          ? "Gagal memuat suara. Coba lagi sebentar."
+          : "Narasi ini otomatis dibacakan di preview dan ikut masuk ke video hasil ekspor."}
+      </p>
+    </div>
+  );
+}
+
 export default function SidePanel({
   job,
   project,
@@ -464,6 +550,9 @@ export default function SidePanel({
   onImportMedia: () => void;
   importing: boolean;
 }) {
+  const selectedClip =
+    selection?.track === "clip" ? project.clips.find((c) => c.id === selection.id) ?? null : null;
+
   return (
     <aside className="flex w-[330px] shrink-0 flex-col border-l border-white/8 bg-ink-900/70 backdrop-blur-xl xl:w-[360px]">
       <div className="flex shrink-0 gap-1 border-b border-white/8 p-2">
@@ -620,6 +709,18 @@ export default function SidePanel({
               </Section>
 
               <Section title="Voice over" icon={Mic2}>
+                {selectedClip ? (
+                  <VoiceoverEditor
+                    clip={selectedClip}
+                    voice={job.voice}
+                    volume={project.voiceVolume}
+                    onChange={(value) => onUpdateClip(selectedClip.id, { voiceover: value })}
+                  />
+                ) : (
+                  <p className="rounded-lg border border-dashed border-white/10 px-2 py-2 text-[9.5px] leading-relaxed text-white/35">
+                    Pilih klip di timeline untuk mengedit narasi voice over-nya.
+                  </p>
+                )}
                 <div>
                   <div className="flex items-center justify-between">
                     <label className="text-[10px] font-medium text-white/45">Volume suara TTS</label>

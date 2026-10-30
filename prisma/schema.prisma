@@ -50,6 +50,11 @@ enum AutomationPrivacy {
   private
 }
 
+enum GoalMetric {
+  videos_ready
+  posts_sent
+}
+
 model VideoJob {
   id            String    @id
   title         String    @default("")
@@ -74,6 +79,7 @@ model VideoJob {
   logs          Json      @default("[]")
   error         String?
   editor        Json?
+  media         Json      @default("[]")
 
   posts SocialPost[]
 
@@ -149,4 +155,69 @@ model SocialPost {
   @@index([scheduledAt])
   @@index([status])
   @@index([platform])
+}
+
+model PromptSkill {
+  id          String   @id
+  prompt      String
+  series      String?
+  part        Int?
+  aspectRatio String   @default("9:16")
+  durationSec Int      @default(45)
+  style       String   @default("cinematic")
+  voice       String   @default("female-id")
+  model       String   @default("studio-v1")
+  useCount    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([series])
+  @@index([createdAt])
+}
+
+model Goal {
+  id          String     @id
+  title       String
+  metric      GoalMetric @default(videos_ready)
+  target      Int        @default(10)
+  deadline    DateTime?
+  completedAt DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  plan        Json?
+
+  @@index([createdAt])
+}
+
+model GoalChat {
+  id         String   @id
+  title      String
+  snapshot   Json
+  transcript Json     @default("[]")
+  goalId     String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([updatedAt])
+}
+
+model ScheduleNote {
+  id        String   @id
+  day       String
+  text      String
+  color     String   @default("yellow")
+  createdAt DateTime @default(now())
+
+  @@index([day])
+}
+
+model User {
+  id           String   @id
+  email        String   @unique
+  name         String?
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([email])
 }

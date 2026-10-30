@@ -2,9 +2,14 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import type {
   AspectRatio,
   Automation,
+  EditorMedia,
   EditorProject,
+  Goal,
+  GoalMetric,
   JobStatus,
+  PromptSkill,
   ReferenceSource,
+  ScheduleNote,
   SocialAccount,
   SocialPlatform,
   SocialPost,
@@ -42,9 +47,12 @@ export function jsonValue(value: unknown): Prisma.InputJsonValue {
 
 type JobRow = Prisma.VideoJobGetPayload<object>;
 type ReferenceRow = Prisma.ReferenceSourceGetPayload<object>;
+type PromptSkillRow = Prisma.PromptSkillGetPayload<object>;
+type GoalRow = Prisma.GoalGetPayload<object>;
 type AutomationRow = Prisma.AutomationGetPayload<object>;
 type SocialAccountRow = Prisma.SocialAccountGetPayload<object>;
 type SocialPostRow = Prisma.SocialPostGetPayload<object>;
+type ScheduleNoteRow = Prisma.ScheduleNoteGetPayload<object>;
 
 export function toVideoJob(row: JobRow): VideoJob {
   return {
@@ -69,6 +77,7 @@ export function toVideoJob(row: JobRow): VideoJob {
     thumbnailIdea: row.thumbnailIdea,
     musicMood: row.musicMood,
     logs: (row.logs ?? []) as unknown as VideoJob["logs"],
+    media: (row.media ?? []) as unknown as EditorMedia[],
     error: row.error ?? undefined,
     editor: (row.editor ?? undefined) as unknown as EditorProject | undefined,
   };
@@ -87,6 +96,37 @@ export function toReference(row: ReferenceRow): ReferenceSource {
     insights: row.insights,
     tags: row.tags,
     createdAt: row.createdAt.getTime(),
+  };
+}
+
+export function toPromptSkill(row: PromptSkillRow): PromptSkill {
+  return {
+    id: row.id,
+    prompt: row.prompt,
+    series: row.series ?? undefined,
+    part: row.part ?? undefined,
+    aspectRatio: row.aspectRatio as AspectRatio,
+    durationSec: row.durationSec,
+    style: row.style,
+    voice: row.voice,
+    model: row.model,
+    useCount: row.useCount,
+    createdAt: row.createdAt.getTime(),
+    updatedAt: row.updatedAt.getTime(),
+  };
+}
+
+export function toGoal(row: GoalRow): Goal {
+  return {
+    id: row.id,
+    title: row.title,
+    metric: row.metric as GoalMetric,
+    target: row.target,
+    deadline: toIso(row.deadline),
+    completedAt: toMs(row.completedAt),
+    createdAt: row.createdAt.getTime(),
+    updatedAt: row.updatedAt.getTime(),
+    plan: (row.plan ?? undefined) as unknown as Goal["plan"],
   };
 }
 
@@ -163,6 +203,7 @@ export function jobCreateData(job: VideoJob): Prisma.VideoJobUncheckedCreateInpu
     thumbnailIdea: job.thumbnailIdea,
     musicMood: job.musicMood,
     logs: jsonArray(job.logs),
+    media: jsonArray(job.media),
     error: job.error ?? null,
     editor: job.editor ? (job.editor as unknown as Prisma.InputJsonValue) : Prisma.DbNull,
   };
@@ -185,6 +226,36 @@ export function referenceCreateData(ref: ReferenceSource): Prisma.ReferenceSourc
     insights: ref.insights,
     tags: ref.tags,
     createdAt: toDate(ref.createdAt),
+  };
+}
+
+export function goalCreateData(goal: Goal): Prisma.GoalUncheckedCreateInput {
+  return {
+    id: goal.id,
+    title: goal.title,
+    metric: goal.metric,
+    target: goal.target,
+    deadline: goal.deadline ? new Date(goal.deadline) : null,
+    completedAt: goal.completedAt ? toDate(goal.completedAt) : null,
+    createdAt: toDate(goal.createdAt),
+    updatedAt: toDate(goal.updatedAt),
+  };
+}
+
+export function promptSkillCreateData(skill: PromptSkill): Prisma.PromptSkillUncheckedCreateInput {
+  return {
+    id: skill.id,
+    prompt: skill.prompt,
+    series: skill.series ?? null,
+    part: skill.part ?? null,
+    aspectRatio: skill.aspectRatio,
+    durationSec: skill.durationSec,
+    style: skill.style,
+    voice: skill.voice,
+    model: skill.model,
+    useCount: skill.useCount,
+    createdAt: toDate(skill.createdAt),
+    updatedAt: toDate(skill.updatedAt),
   };
 }
 
@@ -241,4 +312,24 @@ export function socialPostCreateData(post: SocialPost): Prisma.SocialPostUncheck
 export function socialPostUpdateData(post: SocialPost): Prisma.SocialPostUncheckedUpdateInput {
   const { id: _id, ...rest } = socialPostCreateData(post);
   return rest;
+}
+
+export function toScheduleNote(row: ScheduleNoteRow): ScheduleNote {
+  return {
+    id: row.id,
+    day: row.day,
+    text: row.text,
+    color: row.color as ScheduleNote["color"],
+    createdAt: row.createdAt.getTime(),
+  };
+}
+
+export function scheduleNoteCreateData(note: ScheduleNote): Prisma.ScheduleNoteUncheckedCreateInput {
+  return {
+    id: note.id,
+    day: note.day,
+    text: note.text,
+    color: note.color,
+    createdAt: toDate(note.createdAt),
+  };
 }

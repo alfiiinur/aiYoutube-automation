@@ -37,6 +37,7 @@ export async function POST(req: Request) {
     style: String(body.style ?? "cinematic"),
     voice: String(body.voice ?? "female-id"),
     model: String(body.model ?? "studio-v1"),
+    media: body.media,
   });
 
   return NextResponse.json({ job }, { status: 201 });
