@@ -1,4 +1,4 @@
-// Prisma schema for Studio AI — YouTube automation
+// Prisma schema for BroTek Labs — YouTube automation
 // Docs: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -75,6 +75,7 @@ model VideoJob {
   hashtags      String[]  @default([])
   scenes        Json      @default("[]")
   thumbnailIdea String    @default("")
+  thumbnailTemplate String @default("bold")
   musicMood     String    @default("")
   logs          Json      @default("[]")
   error         String?
@@ -172,6 +173,18 @@ model PromptSkill {
   updatedAt   DateTime @updatedAt
 
   @@index([series])
+  @@index([createdAt])
+}
+
+model PromptHistory {
+  id        String   @id
+  topic     String
+  count     Int      @default(5)
+  ideas     Json     @default("[]")
+  source    String   @default("local")
+  notice    String?
+  createdAt DateTime @default(now())
+
   @@index([createdAt])
 }
 

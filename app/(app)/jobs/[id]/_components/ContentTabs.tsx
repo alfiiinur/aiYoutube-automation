@@ -1,10 +1,11 @@
 "use client";
 
 import { Card } from "../../../../components/ui";
-import type { VideoJob } from "../../../../types";
+import type { ThumbnailTemplate, VideoJob } from "../../../../types";
 import { storyboardImageUrl, storyboardThumbClass } from "../../../../lib/storyboard-image";
 import type { JobTab } from "../_hooks/useJobDetail";
 import { CopyBtn, DownloadBtn } from "./buttons";
+import { ThumbnailPanel } from "./ThumbnailPanel";
 
 export function ContentTabs({
   job,
@@ -12,18 +13,22 @@ export function ContentTabs({
   setTab,
   onDownloadSrt,
   onDownloadMd,
+  onSelectThumbnail,
+  savingThumbnail,
 }: {
   job: VideoJob;
   tab: JobTab;
   setTab: (t: JobTab) => void;
   onDownloadSrt: () => void;
   onDownloadMd: () => void;
+  onSelectThumbnail: (template: ThumbnailTemplate) => void;
+  savingThumbnail: boolean;
 }) {
   return (
     <Card className="p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex gap-1 rounded-xl border border-white/8 bg-white/3 p-1">
-          {(["script", "storyboard", "caption"] as const).map((t) => (
+          {(["script", "storyboard", "caption", "thumbnail"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -38,7 +43,7 @@ export function ContentTabs({
         <div className="flex items-center gap-2">
           <CopyBtn
             text={
-              tab === "script" ? job.script : tab === "caption" ? `${job.caption}\n\n${job.hashtags.join(" ")}` : job.scenes
+              tab === "script" ? job.script : tab === "caption" ? `${job.caption}\n\n${job.hashtags.join(" ")}` : tab === "thumbnail" ? job.thumbnailIdea : job.scenes
                   .map((s) => `#${s.index} ${s.timecode}\nVisual: ${s.visual}\nText: ${s.onScreenText}\nVO: ${s.voiceover}`)
                   .join("\n\n")
             }
@@ -101,6 +106,11 @@ export function ContentTabs({
               ))}
             </div>
           </div>
+        )}
+      </div>
+      <div className="mt-4">
+        {tab === "thumbnail" && (
+          <ThumbnailPanel job={job} saving={savingThumbnail} onSelect={onSelectThumbnail} />
         )}
       </div>
     </Card>

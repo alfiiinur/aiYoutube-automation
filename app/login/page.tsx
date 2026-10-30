@@ -51,7 +51,7 @@ export default function LoginPage() {
           <div className="grid size-9 place-items-center rounded-xl bg-white">
             <Clapperboard className="size-5 text-black" />
           </div>
-          <span className="text-sm font-semibold tracking-tight">Studio AI</span>
+          <span className="text-sm font-semibold tracking-tight">BroTek Labs</span>
         </Link>
         <div className="relative">
           <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/35">

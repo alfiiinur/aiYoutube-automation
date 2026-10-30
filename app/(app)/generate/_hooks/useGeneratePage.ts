@@ -47,6 +47,12 @@ export function useGeneratePage() {
     refStore.loadRefs();
     skillStore.loadSkills();
     chatStore.loadChats();
+    // Handoff dari halaman Prompt Ideas: ?prompt=... diisi sekali lalu dibersihkan.
+    const handoff = new URLSearchParams(window.location.search).get("prompt")?.trim();
+    if (handoff) {
+      form.setPrompt(handoff.slice(0, 2000));
+      window.history.replaceState(null, "", "/generate");
+    }
     if (window.innerWidth < 1280) setSidebarOpen(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

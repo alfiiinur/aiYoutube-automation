@@ -4,6 +4,7 @@ import { SESSION_COOKIE, sessionSecret, verifySessionValue } from "./app/lib/ses
 
 const PROTECTED_PREFIXES = [
   "/dashboard",
+  "/prompts",
   "/generate",
   "/references",
   "/jobs",
@@ -20,6 +21,7 @@ const PUBLIC_API = [
   "/api/cron",
   "/api/telegram",
   "/api/storyboard-image",
+  "/api/thumbnail",
   "/api/uploads",
 ];
 
@@ -63,6 +65,7 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     "/dashboard/:path*",
+    "/prompts/:path*",
     "/generate/:path*",
     "/references/:path*",
     "/jobs/:path*",

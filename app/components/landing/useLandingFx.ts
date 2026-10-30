@@ -87,7 +87,8 @@ export function useLandingFx(root: RefObject<HTMLElement | null>) {
 
       /* ---------- angka statistik: count-up ---------- */
       gsap.utils.toArray<HTMLElement>("[data-count]").forEach((elm) => {
-        const target = Number(elm.dataset.count || "0");
+        const parsed = Number(elm.dataset.count ?? "0");
+        const target = Number.isFinite(parsed) ? parsed : 0;
         const suffix = elm.dataset.suffix || "";
         const obj = { v: 0 };
         gsap.to(obj, {

@@ -3,6 +3,7 @@ import { prisma, jsonValue, toReference, toVideoJob } from "@/app/lib/db";
 import { evolve } from "@/app/lib/store";
 import { notifyJobReady } from "@/app/lib/telegram";
 import type { VideoJob } from "@/app/types";
+import { isThumbnailTemplate } from "@/app/lib/thumbnail-templates";
 
 export const dynamic = "force-dynamic";
 
@@ -24,20 +25,31 @@ export async function GET(_req: Request, { params }: Ctx) {
 
 export async function PATCH(req: Request, { params }: Ctx) {
   const { id } = await params;
-  const body = (await req.json().catch(() => ({}))) as { status?: string };
-  if (!body.status || !ALLOWED.includes(body.status)) {
+  const body = (await req.json().catch(() => ({}))) as { status?: string; thumbnailTemplate?: string };
+  const wantStatus = typeof body.status === "string" ? body.status : undefined;
+  const wantTemplate = typeof body.thumbnailTemplate === "string" ? body.thumbnailTemplate : undefined;
+  if (wantStatus !== undefined && !ALLOWED.includes(wantStatus)) {
     return NextResponse.json({ error: "Status tidak valid" }, { status: 400 });
+  }
+  if (wantTemplate !== undefined && !isThumbnailTemplate(wantTemplate)) {
+    return NextResponse.json({ error: "Template thumbnail tidak valid" }, { status: 400 });
+  }
+  if (wantStatus === undefined && wantTemplate === undefined) {
+    return NextResponse.json({ error: "Tidak ada perubahan" }, { status: 400 });
   }
 
   const row = await prisma.videoJob.findUnique({ where: { id } });
   if (!row) return NextResponse.json({ error: "Job tidak ditemukan" }, { status: 404 });
 
-  const nextStatus = body.status as VideoJob["status"];
+  const nextStatus = (wantStatus ?? row.status) as VideoJob["status"];
   const now = Date.now();
-  const logs = [
-    ...((row.logs ?? []) as unknown as VideoJob["logs"]),
-    { at: now, message: `Status diubah manual → ${nextStatus}` },
-  ];
+  const logs =
+    wantStatus !== undefined
+      ? [
+          ...((row.logs ?? []) as unknown as VideoJob["logs"]),
+          { at: now, message: `Status diubah manual → ${nextStatus}` },
+        ]
+      : ((row.logs ?? []) as unknown as VideoJob["logs"]);
 
   const updated = await prisma.videoJob.update({
     where: { id },
@@ -46,12 +58,13 @@ export async function PATCH(req: Request, { params }: Ctx) {
       progress: nextStatus === "ready" ? 100 : nextStatus === "queued" ? 1 : row.progress,
       logs: jsonValue(logs),
       error: nextStatus === "failed" ? "Gagal ditandai manual" : null,
+      ...(wantTemplate !== undefined ? { thumbnailTemplate: wantTemplate } : {}),
       updatedAt: new Date(now),
     },
   });
 
   const job = toVideoJob(updated);
-  if (nextStatus === "ready") await notifyJobReady(job);
+  if (wantStatus === "ready") await notifyJobReady(job);
   return NextResponse.json({ job });
 }
 

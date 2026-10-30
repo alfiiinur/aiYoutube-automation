@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import {
   Aperture,
   Captions as CaptionsIcon,
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import type { EditorCaption, EditorOverlay, EditorProject, VideoJob } from "@/app/types";
 import { fmtTime } from "@/app/lib/editor";
+import { captionFontFamily, captionFontWeight } from "@/app/lib/caption-fonts";
 import { storyboardImageUrl } from "@/app/lib/storyboard-image";
 import { isMonochrome, paletteAt } from "@/app/lib/visual-palette";
 
@@ -24,12 +25,12 @@ function captionClass(caption: EditorCaption, playing: boolean, playhead: number
   const pos =
     caption.position === "top" ? "top-10" : caption.position === "middle" ? "top-1/2 -translate-y-1/2" : "bottom-11";
   if (caption.style === "bold") {
-    return `${base} ${pos} text-[15px] font-black uppercase tracking-tight text-white [text-shadow:0_2px_0_#000,0_0_10px_rgba(0,0,0,0.85)]`;
+    return `${base} ${pos} text-[15px] uppercase tracking-tight text-white [text-shadow:0_2px_0_#000,0_0_10px_rgba(0,0,0,0.85)]`;
   }
   if (caption.style === "minimal") {
-    return `${base} ${pos} text-[12px] font-medium text-white/95 [&>span]:rounded-md [&>span]:bg-black/65 [&>span]:px-1.5 [&>span]:py-0.5`;
+    return `${base} ${pos} text-[12px] text-white/95 [&>span]:rounded-md [&>span]:bg-black/65 [&>span]:px-1.5 [&>span]:py-0.5`;
   }
-  return `${base} ${pos} text-[14px] font-bold ${playing ? "" : ""}`;
+  return `${base} ${pos} text-[14px] ${playing ? "" : ""}`;
 }
 
 function ActiveCaption({
@@ -41,14 +42,23 @@ function ActiveCaption({
   playhead: number;
   playing: boolean;
 }) {
+  const fontStyle: CSSProperties = {
+    fontFamily: captionFontFamily(caption.font),
+    fontWeight: captionFontWeight(caption),
+    fontStyle: caption.italic ? "italic" : "normal",
+  };
   if (caption.style !== "karaoke") {
-    return <div className={captionClass(caption, playing, playhead)}>{caption.text}</div>;
+    return (
+      <div className={captionClass(caption, playing, playhead)} style={fontStyle}>
+        {caption.text}
+      </div>
+    );
   }
   const words = caption.text.split(/\s+/).filter(Boolean);
   const progress = Math.min(1, Math.max(0, (playhead - caption.start) / Math.max(0.2, caption.end - caption.start)));
   const active = Math.ceil(progress * words.length);
   return (
-    <div className={captionClass(caption, playing, playhead)}>
+    <div className={captionClass(caption, playing, playhead)} style={fontStyle}>
       {words.map((word, i) => (
         <span key={`${word}-${i}`} className={i < active ? "text-lime-300" : "text-white/90"}>
           {word}{" "}

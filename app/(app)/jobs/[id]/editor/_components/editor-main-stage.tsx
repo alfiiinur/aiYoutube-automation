@@ -90,7 +90,7 @@ export default function EditorMainStage({
           mobilePanel
             ? "fixed inset-y-14 right-0 z-40 flex max-w-[90vw] shadow-2xl shadow-black/60"
             : "hidden"
-        } lg:relative lg:inset-auto lg:z-auto lg:flex lg:max-w-none lg:shadow-none`}
+        } lg:relative lg:inset-auto lg:z-auto lg:flex lg:h-full lg:min-h-0 lg:max-w-none lg:shadow-none`}
       >
         <SidePanel
           job={job}

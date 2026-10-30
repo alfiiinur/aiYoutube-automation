@@ -19,7 +19,8 @@ export function AccountManager({
     <Card className="p-5">
       <h2 className="text-sm font-semibold text-white/85">Akun terhubung</h2>
       <p className="mt-1 text-[11px] leading-relaxed text-white/40">
-        Token disimpan di database PostgreSQL. Untuk produksi, isi access token dari Meta Graph API.
+        Token disimpan di database PostgreSQL. Untuk produksi, isi access token dari Meta Graph API
+        (panduan: <code className="rounded bg-white/8 px-1">docs/meta-setup.md</code>).
       </p>
 
       <div className="mt-4 grid gap-2 sm:grid-cols-2">

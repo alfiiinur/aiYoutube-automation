@@ -65,6 +65,9 @@ export interface EditorClip {
 export type CaptionStyle = "bold" | "karaoke" | "minimal";
 export type CaptionPosition = "top" | "middle" | "bottom";
 
+/** Font caption yang populer dipakai di video (lihat app/lib/caption-fonts.ts). */
+export type CaptionFont = "poppins" | "montserrat" | "anton" | "bebas" | "inter" | "playfair";
+
 export interface EditorCaption {
   id: string;
   start: number;
@@ -72,6 +75,9 @@ export interface EditorCaption {
   text: string;
   style: CaptionStyle;
   position: CaptionPosition;
+  font: CaptionFont;
+  bold: boolean;
+  italic: boolean;
 }
 
 export type OverlayVariant = "title" | "lower-third" | "badge";
@@ -114,6 +120,9 @@ export interface EditorProject {
   updatedAt: number;
 }
 
+/** Template gaya cover thumbnail (lihat app/lib/thumbnail-templates.ts). */
+export type ThumbnailTemplate = "bold" | "minimal" | "split" | "frame";
+
 export interface VideoJob {
   id: string;
   title: string;
@@ -134,11 +143,23 @@ export interface VideoJob {
   hashtags: string[];
   scenes: StoryboardScene[];
   thumbnailIdea: string;
+  thumbnailTemplate: ThumbnailTemplate;
   musicMood: string;
   logs: { at: number; message: string }[];
   error?: string;
   editor?: EditorProject;
   media: EditorMedia[];
+}
+
+/** Satu entri riwayat generate ide prompt (disimpan di database). */
+export interface PromptHistoryEntry {
+  id: string;
+  topic: string;
+  count: number;
+  ideas: { title: string; prompt: string; angle?: string }[];
+  source: "ai" | "local";
+  notice: string | null;
+  at: number;
 }
 
 export interface PromptSkill {

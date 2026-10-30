@@ -35,6 +35,12 @@ const PROVIDERS = [
     env: "TELEGRAM_BOT_TOKEN",
     purpose: "Generate video dan monitoring job langsung dari chat Telegram.",
   },
+  {
+    id: "meta",
+    name: "Meta (Threads / IG / FB)",
+    env: "META_APP_ID",
+    purpose: "Konek Meta Developer agar jadwal publish terkirim asli, bukan simulasi. Panduan: docs/meta-setup.md.",
+  },
 ];
 
 export default function SettingsPage() {

@@ -11,7 +11,8 @@ import { ReferencesCard } from "./_components/ReferencesCard";
 import { AssetsCard } from "./_components/AssetsCard";
 
 export default function JobDetailPage() {
-  const { job, refs, tab, setTab, error, retry, downloadSrt, downloadMd } = useJobDetail();
+  const { job, refs, tab, setTab, error, retry, downloadSrt, downloadMd, updateThumbnail, savingThumbnail } =
+    useJobDetail();
 
   if (error) {
     return (
@@ -39,7 +40,15 @@ export default function JobDetailPage() {
       <div className="grid gap-4 xl:grid-cols-[1.6fr_1fr]">
         <div className="flex flex-col gap-4">
           <PipelineCard job={job} />
-          <ContentTabs job={job} tab={tab} setTab={setTab} onDownloadSrt={downloadSrt} onDownloadMd={downloadMd} />
+          <ContentTabs
+            job={job}
+            tab={tab}
+            setTab={setTab}
+            onDownloadSrt={downloadSrt}
+            onDownloadMd={downloadMd}
+            onSelectThumbnail={updateThumbnail}
+            savingThumbnail={savingThumbnail}
+          />
         </div>
 
         <div className="flex flex-col gap-4">

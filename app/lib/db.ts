@@ -1,4 +1,5 @@
 import { Prisma, PrismaClient } from "@prisma/client";
+import { isThumbnailTemplate } from "@/app/lib/thumbnail-templates";
 import type {
   AspectRatio,
   Automation,
@@ -7,6 +8,7 @@ import type {
   Goal,
   GoalMetric,
   JobStatus,
+  PromptHistoryEntry,
   PromptSkill,
   ReferenceSource,
   ScheduleNote,
@@ -48,6 +50,7 @@ export function jsonValue(value: unknown): Prisma.InputJsonValue {
 type JobRow = Prisma.VideoJobGetPayload<object>;
 type ReferenceRow = Prisma.ReferenceSourceGetPayload<object>;
 type PromptSkillRow = Prisma.PromptSkillGetPayload<object>;
+type PromptHistoryRow = Prisma.PromptHistoryGetPayload<object>;
 type GoalRow = Prisma.GoalGetPayload<object>;
 type AutomationRow = Prisma.AutomationGetPayload<object>;
 type SocialAccountRow = Prisma.SocialAccountGetPayload<object>;
@@ -75,6 +78,7 @@ export function toVideoJob(row: JobRow): VideoJob {
     hashtags: row.hashtags,
     scenes: (row.scenes ?? []) as unknown as StoryboardScene[],
     thumbnailIdea: row.thumbnailIdea,
+    thumbnailTemplate: isThumbnailTemplate(row.thumbnailTemplate) ? row.thumbnailTemplate : "bold",
     musicMood: row.musicMood,
     logs: (row.logs ?? []) as unknown as VideoJob["logs"],
     media: (row.media ?? []) as unknown as EditorMedia[],
@@ -113,6 +117,25 @@ export function toPromptSkill(row: PromptSkillRow): PromptSkill {
     useCount: row.useCount,
     createdAt: row.createdAt.getTime(),
     updatedAt: row.updatedAt.getTime(),
+  };
+}
+
+export function toPromptHistory(row: PromptHistoryRow): PromptHistoryEntry {
+  const ideas = (Array.isArray(row.ideas) ? row.ideas : []).flatMap((e): PromptHistoryEntry["ideas"] => {
+    if (!e || typeof e !== "object") return [];
+    const item = e as { title?: unknown; prompt?: unknown; angle?: unknown };
+    if (typeof item.title !== "string" || typeof item.prompt !== "string") return [];
+    const angle = typeof item.angle === "string" && item.angle ? item.angle : undefined;
+    return [{ title: item.title, prompt: item.prompt, ...(angle ? { angle } : {}) }];
+  });
+  return {
+    id: row.id,
+    topic: row.topic,
+    count: row.count,
+    ideas,
+    source: row.source === "ai" ? "ai" : "local",
+    notice: row.notice ?? null,
+    at: row.createdAt.getTime(),
   };
 }
 
@@ -201,6 +224,7 @@ export function jobCreateData(job: VideoJob): Prisma.VideoJobUncheckedCreateInpu
     hashtags: job.hashtags,
     scenes: jsonArray(job.scenes),
     thumbnailIdea: job.thumbnailIdea,
+    thumbnailTemplate: job.thumbnailTemplate,
     musicMood: job.musicMood,
     logs: jsonArray(job.logs),
     media: jsonArray(job.media),

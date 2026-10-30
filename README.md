@@ -1,4 +1,4 @@
-# Studio AI — YT Automation & Video Generator
+# BroTek Labs — YT Automation & Video Generator
 
 Dashboard untuk mengotomatiskan produksi video YouTube/Short: tulis prompt, tempel link referensi (YouTube/Instagram/TikTok/web), lalu sistem menyusun hook, script, storyboard, caption, dan hashtag secara otomatis via pipeline bertahap.
 
@@ -86,7 +86,12 @@ YOUTUBE_CLIENT_SECRET=
 YOUTUBE_REFRESH_TOKEN=
 RENDER_API_KEY=
 ELEVENLABS_API_KEY=
+META_APP_ID=
+META_APP_SECRET=
+META_REDIRECT_URI=
 ```
+
+Panduan konek Meta Developer (Threads, Instagram, Facebook): [`docs/meta-setup.md`](docs/meta-setup.md).
 
 Tanpa kunci tersebut, aplikasi tetap berjalan dalam **mode simulasi**:
 - Generator script/storyboard aktif penuh (heuristik lokal)

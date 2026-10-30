@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
+  Bold,
   Check,
   Copy,
+  Italic,
   Loader2,
   MessageSquare,
   Mic2,
@@ -18,6 +20,7 @@ import {
   Wand2,
 } from "lucide-react";
 import type {
+  CaptionFont,
   CaptionPosition,
   CaptionStyle,
   EditorCaption,
@@ -30,6 +33,7 @@ import type {
   VideoJob,
 } from "@/app/types";
 import { MUSIC_PRESETS, fmtTime } from "@/app/lib/editor";
+import { CAPTION_FONTS, captionFontFamily, captionFontWeight } from "@/app/lib/caption-fonts";
 
 export type SideTab = "chat" | "props";
 
@@ -167,7 +171,19 @@ function ChatView({
 
   useEffect(() => {
     const el = scrollRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    if (!el) return;
+    const toBottom = () => {
+      el.scrollTop = el.scrollHeight;
+    };
+    toBottom();
+    /* Layout flex kadang belum final saat efek pertama jalan — ulangi setelah paint. */
+    const raf = requestAnimationFrame(toBottom);
+    const ro = new ResizeObserver(toBottom);
+    ro.observe(el);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+    };
   }, [project.chat.length, thinking]);
 
   const submit = (value?: string) => {
@@ -178,8 +194,8 @@ function ChatView({
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-center justify-between border-b border-white/6 px-3 py-2.5">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/6 px-3 py-2.5">
         <div className="flex items-center gap-2">
           <div className="grid size-7 place-items-center rounded-lg bg-white">
             <Sparkles className="size-3.5 text-black" />
@@ -194,11 +210,14 @@ function ChatView({
         </span>
       </div>
 
-      <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-3 py-3">
+      <div
+        ref={scrollRef}
+        className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-3 py-3"
+      >
         {project.chat.map((m) =>
           m.role === "user" ? (
             <div key={m.id} className="flex justify-end">
-              <div className="max-w-[88%] rounded-2xl rounded-br-md bg-white px-3 py-2 text-[11.5px] leading-relaxed text-black">
+              <div className="max-w-[88%] whitespace-pre-wrap break-words rounded-2xl rounded-br-md bg-white px-3 py-2 text-[11.5px] leading-relaxed text-black">
                 {m.text}
               </div>
             </div>
@@ -207,7 +226,7 @@ function ChatView({
               <div className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-md bg-accent-500/15">
                 <Sparkles className="size-3 text-accent-400" />
               </div>
-              <div className="max-w-[88%] rounded-2xl rounded-tl-md border border-white/7 bg-white/[0.045] px-3 py-2 text-[11.5px] leading-relaxed text-white/70">
+              <div className="max-w-[88%] whitespace-pre-wrap break-words rounded-2xl rounded-tl-md border border-white/7 bg-white/[0.045] px-3 py-2 text-[11.5px] leading-relaxed text-white/70">
                 {m.text}
               </div>
             </div>
@@ -225,13 +244,16 @@ function ChatView({
         )}
       </div>
 
-      <div className="border-t border-white/6 p-3">
-        <div className="mb-2 flex flex-wrap gap-1">
+      <div className="shrink-0 border-t border-white/6 p-2.5">
+        <div
+          className="mb-2 flex gap-1 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          style={{ maskImage: "linear-gradient(to right, black calc(100% - 22px), transparent)" }}
+        >
           {SUGGESTIONS.map((s) => (
             <button
               key={s}
               onClick={() => submit(s)}
-              className="rounded-full border border-white/8 bg-white/3 px-2 py-1 text-[9.5px] text-white/45 transition hover:border-white/16 hover:text-white/80"
+              className="shrink-0 whitespace-nowrap rounded-full border border-white/8 bg-white/3 px-2 py-1 text-[9.5px] text-white/45 transition hover:border-white/16 hover:text-white/80"
             >
               {s}
             </button>
@@ -380,6 +402,60 @@ function ItemProps({
                 <option value="top" className="bg-ink-900">Atas</option>
               </select>
             </LabeledField>
+          </div>
+          <div className="grid grid-cols-[1fr_auto] items-end gap-2">
+            <LabeledField label="Font">
+              <select
+                value={caption.font}
+                onChange={(e) => onUpdateCaption(caption.id, { font: e.target.value as CaptionFont })}
+                className={inputCls}
+                style={{ fontFamily: captionFontFamily(caption.font) }}
+              >
+                {CAPTION_FONTS.map((f) => (
+                  <option key={f.id} value={f.id} className="bg-ink-900" style={{ fontFamily: captionFontFamily(f.id) }}>
+                    {f.label}
+                  </option>
+                ))}
+              </select>
+            </LabeledField>
+            <div className="flex gap-1 pb-[1px]">
+              <button
+                onClick={() => onUpdateCaption(caption.id, { bold: !caption.bold })}
+                className={`grid size-[30px] place-items-center rounded-lg border transition ${
+                  caption.bold
+                    ? "border-brand-500/50 bg-white/10 text-white"
+                    : "border-white/8 text-white/40 hover:text-white/80"
+                }`}
+                title="Tebal (bold)"
+                aria-label="Tebal (bold)"
+                aria-pressed={caption.bold}
+              >
+                <Bold className="size-3.5" />
+              </button>
+              <button
+                onClick={() => onUpdateCaption(caption.id, { italic: !caption.italic })}
+                className={`grid size-[30px] place-items-center rounded-lg border transition ${
+                  caption.italic
+                    ? "border-brand-500/50 bg-white/10 text-white"
+                    : "border-white/8 text-white/40 hover:text-white/80"
+                }`}
+                title="Miring (italic)"
+                aria-label="Miring (italic)"
+                aria-pressed={caption.italic}
+              >
+                <Italic className="size-3.5" />
+              </button>
+            </div>
+          </div>
+          <div
+            className="rounded-lg border border-white/8 bg-black/40 px-2 py-1.5 text-center text-[13px] leading-snug text-white"
+            style={{
+              fontFamily: captionFontFamily(caption.font),
+              fontWeight: captionFontWeight(caption),
+              fontStyle: caption.italic ? "italic" : "normal",
+            }}
+          >
+            {caption.text.trim() ? caption.text.trim().slice(0, 60) : "Contoh caption"}
           </div>
           <TimeFields
             start={caption.start}
@@ -554,7 +630,7 @@ export default function SidePanel({
     selection?.track === "clip" ? project.clips.find((c) => c.id === selection.id) ?? null : null;
 
   return (
-    <aside className="flex w-[330px] shrink-0 flex-col border-l border-white/8 bg-ink-900/70 backdrop-blur-xl xl:w-[360px]">
+    <aside className="flex h-full min-h-0 w-[330px] shrink-0 flex-col overflow-hidden border-l border-white/8 bg-ink-900/70 backdrop-blur-xl xl:w-[360px]">
       <div className="flex shrink-0 gap-1 border-b border-white/8 p-2">
         <button
           onClick={() => setTab("chat")}
@@ -574,12 +650,12 @@ export default function SidePanel({
         </button>
       </div>
 
-      <div className="min-h-0 flex-1">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {tab === "chat" ? (
           <ChatView project={project} thinking={thinking} onSend={onSend} />
         ) : (
-          <div className="flex h-full flex-col">
-            <div className="flex-1 space-y-3 overflow-y-auto p-3">
+          <div className="flex h-full min-h-0 flex-col">
+            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3">
               {selection ? (
                 <ItemProps
                   selection={selection}

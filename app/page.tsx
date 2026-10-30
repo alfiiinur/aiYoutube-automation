@@ -15,7 +15,7 @@ import {
   LayoutGrid,
   CalendarClock,
   Send,
-  Quote,
+  Play,
 } from "lucide-react";
 import { useLandingFx } from "./components/landing/useLandingFx";
 
@@ -124,71 +124,10 @@ const SHOWCASE = [
   },
 ];
 
-const QUOTES = [
-  {
-    quote:
-      "Dulu satu Short butuh seharian: riset, nulis, ngedit. Sekarang saya kejar 3 video sehari sendirian — dan retention-nya justru naik.",
-    name: "Raka Pratama",
-    role: "Kreator edukasi, 180 rb subscriber",
-  },
-  {
-    quote:
-      "Fitur referensinya yang paling nempel. Saya tempel 3 video kompetitor, sistemnya nangkep pola hook-nya, terus bikin versi saya sendiri.",
-    name: "Nadia Safitri",
-    role: "Social media specialist agensi",
-  },
-  {
-    quote:
-      "Kalender konten + autopost-nya ngegantiin kerjaan admin. Klien tinggal approve ide, sisanya jalan sendiri sampai tayang.",
-    name: "Bagas Wijaya",
-    role: "Owner studio konten UMKM",
-  },
-];
-
-const PLANS = [
-  {
-    name: "Mulai",
-    price: "Rp0",
-    period: "gratis selamanya",
-    desc: "Buat merasakan pipeline produksi end-to-end.",
-    cta: "Daftar gratis",
-    features: ["8 video per bulan", "Storyboard & caption standar", "1 kanal autopost", "Riwayat prompt pribadi"],
-    hot: false,
-  },
-  {
-    name: "Pro",
-    price: "Rp149 rb",
-    period: "per bulan, batal kapan saja",
-    desc: "Buat kreator harian yang kejar konsistensi tayang.",
-    cta: "Mulai 14 hari gratis",
-    features: [
-      "120 video per bulan",
-      "Serial prompt ber-part + prioritas render",
-      "3 kanal autopost + kalender konten",
-      "Notifikasi Telegram & automation harian",
-    ],
-    hot: true,
-  },
-  {
-    name: "Studio",
-    price: "Rp499 rb",
-    period: "per bulan, untuk tim",
-    desc: "Buat agensi dan studio dengan banyak klien.",
-    cta: "Hubungi kami",
-    features: [
-      "Video tanpa batas",
-      "5 kursi tim + workspace klien",
-      "API render & webhook",
-      "Dukungan prioritas 1×24 jam",
-    ],
-    hot: false,
-  },
-];
-
 const FAQS = [
   {
     q: "Apakah saya tetap butuh aplikasi editing lain?",
-    a: "Untuk alur standar tidak. Script, storyboard, caption, timeline klip, musik, dan overlay semuanya ada di dalam Studio. Hasilnya bisa Anda ekspor dan poles lagi di CapCut atau Premiere kalau mau — file dan naskahnya milik Anda sepenuhnya.",
+    a: "Untuk alur standar tidak. Script, storyboard, caption, timeline klip, musik, dan overlay semuanya ada di dalam BroTek Labs. Hasilnya bisa Anda ekspor dan poles lagi di CapCut atau Premiere kalau mau — file dan naskahnya milik Anda sepenuhnya.",
   },
   {
     q: "Dari mana sistem belajar gaya video saya?",
@@ -207,6 +146,54 @@ const FAQS = [
     a: "Bisa. Paket turun ke Gratis di akhir periode berjalan tanpa penalti, dan semua video yang sudah jadi tetap bisa Anda akses, unduh, dan tayangkan ulang.",
   },
 ];
+/* Isi `src` dengan URL embed YouTube (kind: "youtube") atau file mp4 (kind: "file")
+   untuk mengaktifkan videonya. Selama src null, kartu tampil sebagai mock. */
+const VIDEO_TESTIMONIALS: Array<{
+  name: string;
+  role: string;
+  quote: string;
+  platform: string;
+  duration: string;
+  initial: string;
+  thumb: string;
+  kind: "youtube" | "file";
+  src: string | null;
+}> = [
+  {
+    name: "Raka Pratama",
+    role: "Kreator edukasi, 180 rb subscriber",
+    quote: "Dulu satu Short butuh seharian. Sekarang 3 video sehari, sendirian.",
+    platform: "YouTube Shorts",
+    duration: "0:48",
+    initial: "R",
+    thumb: "from-violet-950/90 via-[#121214] to-black",
+    kind: "youtube",
+    src: null,
+  },
+  {
+    name: "Nadia Safitri",
+    role: "Social media specialist agensi",
+    quote: "Tempel 3 video kompetitor, pola hook-nya langsung ketangkap.",
+    platform: "Instagram Reels",
+    duration: "1:12",
+    initial: "N",
+    thumb: "from-fuchsia-950/70 via-[#121214] to-black",
+    kind: "youtube",
+    src: null,
+  },
+  {
+    name: "Bagas Wijaya",
+    role: "Owner studio konten UMKM",
+    quote: "Kalender konten + autopost ngegantiin kerjaan admin.",
+    platform: "TikTok",
+    duration: "0:59",
+    initial: "B",
+    thumb: "from-indigo-950/80 via-[#121214] to-black",
+    kind: "youtube",
+    src: null,
+  },
+];
+
 
 /* --------------------------------- mocks ---------------------------------- */
 
@@ -306,6 +293,44 @@ function ShowcaseMock({ kind }: { kind: "prompt" | "board" | "cal" | "sent" }) {
   if (kind === "cal") return <CalMock />;
   return <SentMock />;
 }
+function VideoTestimonialPlayer({ t }: { t: (typeof VIDEO_TESTIMONIALS)[number] }) {
+  if (t.src && t.kind === "youtube") {
+    return (
+      <div className="aspect-video w-full bg-black">
+        <iframe
+          src={t.src}
+          title={`Testimoni ${t.name}`}
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          className="size-full border-0"
+        />
+      </div>
+    );
+  }
+  if (t.src) {
+    return <video src={t.src} controls preload="metadata" playsInline className="aspect-video w-full bg-black" />;
+  }
+  return (
+    <div className={`relative aspect-video w-full overflow-hidden bg-gradient-to-br ${t.thumb}`}>
+      <span aria-hidden className="absolute inset-0 grid place-items-center text-8xl font-semibold text-white/[0.07]">
+        {t.initial}
+      </span>
+      <span className="absolute inset-0 grid place-items-center">
+        <span className="grid size-14 place-items-center rounded-full bg-violet-500 text-white shadow-[0_0_45px_-8px_rgba(139,92,246,0.8)] transition-transform duration-300 group-hover:scale-110">
+          <Play className="ml-0.5 size-6 fill-current" />
+        </span>
+      </span>
+      <span className="absolute bottom-3 left-3 rounded-md bg-black/70 px-2 py-1 text-[10px] font-medium text-white/80">
+        {t.platform}
+      </span>
+      <span className="absolute bottom-3 right-3 rounded-md bg-black/70 px-2 py-1 font-mono text-[10px] text-white/80">
+        {t.duration}
+      </span>
+    </div>
+  );
+}
+
 
 /* --------------------------------- page ----------------------------------- */
 
@@ -324,13 +349,12 @@ export default function LandingPage() {
             <span className="grid size-8 place-items-center rounded-lg bg-white">
               <Clapperboard className="size-4 text-black" />
             </span>
-            <span className="text-sm font-semibold tracking-tight">Studio AI</span>
+            <span className="text-sm font-semibold tracking-tight">BroTek Labs</span>
           </Link>
           <nav className="hidden items-center gap-7 text-[13px] text-white/55 md:flex">
             <a href="#fitur" className="transition hover:text-white">Fitur</a>
             <a href="#cara-kerja" className="transition hover:text-white">Cara kerja</a>
             <a href="#showcase" className="transition hover:text-white">Hasil</a>
-            <a href="#harga" className="transition hover:text-white">Harga</a>
             <a href="#faq" className="transition hover:text-white">FAQ</a>
           </nav>
           <div className="hidden items-center gap-2 md:flex">
@@ -361,7 +385,6 @@ export default function LandingPage() {
               ["#fitur", "Fitur"],
               ["#cara-kerja", "Cara kerja"],
               ["#showcase", "Hasil"],
-              ["#harga", "Harga"],
               ["#faq", "FAQ"],
             ].map(([href, label]) => (
               <a
@@ -393,6 +416,11 @@ export default function LandingPage() {
 
       {/* ------------------------------- hero ------------------------------ */}
       <section data-hero className="relative overflow-hidden pt-32 lg:pt-40">
+      {/* ambient ungu: glow futuristik */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-40 right-[-8%] size-[36rem] rounded-full bg-violet-600/25 blur-[160px]" />
+        <div className="absolute left-[-10%] top-1/4 size-[28rem] rounded-full bg-fuchsia-600/15 blur-[160px]" />
+      </div>
         <div
           className="pointer-events-none absolute inset-0"
           style={{
@@ -415,14 +443,14 @@ export default function LandingPage() {
               Satu prompt menjadi video siap tayang.
             </h1>
             <p data-hero-item className="mt-6 max-w-lg text-[15px] leading-relaxed text-white/55">
-              Studio AI menulis script, menyusun storyboard, menyiapkan caption, menjadwalkan,
+              BroTek Labs menulis script, menyusun storyboard, menyiapkan caption, menjadwalkan,
               dan mengirim video Anda — otomatis. Anda cukup bawa ide; mesin yang mengantar
               sampai layar penonton.
             </p>
             <div data-hero-item className="mt-8 flex flex-wrap items-center gap-3">
               <Link
                 href="/register"
-                className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-medium text-black transition hover:bg-white/85"
+                className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-medium text-black transition hover:bg-white/85 shadow-[0_0_50px_-12px_rgba(139,92,246,0.55)]"
               >
                 Mulai gratis <ArrowRight className="size-4" />
               </Link>
@@ -455,7 +483,7 @@ export default function LandingPage() {
                   <span className="size-2.5 rounded-full bg-white/20" />
                   <span className="size-2.5 rounded-full bg-white/60" />
                   <span className="ml-3 rounded-md bg-white/6 px-2 py-0.5 font-mono text-[10px] text-white/40">
-                    studio.ai/dashboard
+                    brotek.ai/dashboard
                   </span>
                 </div>
                 <div className="grid grid-cols-[52px_1fr] gap-4 p-4">
@@ -549,7 +577,7 @@ export default function LandingPage() {
         <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 lg:grid-cols-4">
           {STATS.map((s) => (
             <div key={s.label} className="bg-[#0d0d0f] p-6 lg:p-8">
-              <p data-count data-suffix={s.suffix} className="text-3xl font-semibold tracking-tight tabular-nums lg:text-4xl">
+              <p data-count={s.value} data-suffix={s.suffix} className="text-3xl font-semibold tracking-tight tabular-nums lg:text-4xl">
                 0{s.suffix}
               </p>
               <p className="mt-2 text-xs leading-relaxed text-white/45">{s.label}</p>
@@ -561,7 +589,7 @@ export default function LandingPage() {
       {/* ------------------------------ fitur ------------------------------- */}
       <section id="fitur" className="mx-auto max-w-6xl scroll-mt-24 px-5 pb-24 lg:px-8">
         <div data-rise className="max-w-2xl">
-          <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/35">Kenapa Studio</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/35">Kenapa BroTek Labs</p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight lg:text-5xl">
             Semua alat produksi, satu alur tanpa pindah aplikasi.
           </h2>
@@ -666,86 +694,48 @@ export default function LandingPage() {
                 <div className="mt-5">
                   <ShowcaseMock kind={s.mock} />
                 </div>
-              </div>
-            </article>
-          ))}
+      {/* ------------------------- testimoni video ---------------------------- */}
+      <section id="testimoni" className="relative scroll-mt-24 overflow-hidden border-y border-white/8 bg-white/[0.015]">
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <div className="absolute left-1/2 top-[-30%] size-[38rem] -translate-x-1/2 rounded-full bg-violet-600/20 blur-[160px]" />
         </div>
-      </section>
-
-      {/* ---------------------------- testimoni ------------------------------ */}
-      <section className="mx-auto max-w-6xl px-5 py-24 lg:px-8">
-        <div data-rise className="flex flex-wrap items-end justify-between gap-4">
-          <div className="max-w-xl">
-            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/35">Kata mereka</p>
+        <div className="relative mx-auto max-w-6xl px-5 py-24 lg:px-8">
+          <div data-rise className="max-w-2xl">
+            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-violet-300/80">Testimoni video</p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight lg:text-5xl">
-              Kreator yang tayangnya tidak pernah bolong.
+              Kreator yang tayangnya tidak pernah bolong, cerita sendiri.
             </h2>
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-white/50">
+              Testimoni video dari kreator dan studio yang produksi harian dengan BroTek Labs.
+            </p>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-white/40">
-            <Quote className="size-4" /> 4,9/5 dari 2.100+ ulasan
+          <div className="mt-12 grid gap-4 md:grid-cols-3">
+            {VIDEO_TESTIMONIALS.map((t) => (
+              <article
+                key={t.name}
+                data-rise
+                className="group overflow-hidden rounded-2xl border border-white/10 bg-[#101012] transition-colors hover:border-violet-400/40"
+              >
+                <VideoTestimonialPlayer t={t} />
+                <div className="p-5">
+                  <p className="text-sm leading-relaxed text-white/80">“{t.quote}”</p>
+                  <div className="mt-4 flex items-center gap-3 border-t border-white/8 pt-4">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-violet-500/20 text-xs font-semibold text-violet-200">
+                      {t.initial}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">{t.name}</p>
+                      <p className="truncate text-xs text-white/45">{t.role}</p>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))}
           </div>
-        </div>
-        <div className="mt-10 border-t border-white/10">
-          {QUOTES.map((t) => (
-            <figure key={t.name} data-rise className="grid gap-4 border-b border-white/10 py-8 lg:grid-cols-[1.6fr_1fr] lg:items-center">
-              <blockquote className="max-w-2xl text-lg leading-relaxed tracking-tight text-white/85 lg:text-xl">
-                “{t.quote}”
-              </blockquote>
-              <figcaption className="lg:text-right">
-                <p className="text-sm font-medium">{t.name}</p>
-                <p className="mt-0.5 text-xs text-white/45">{t.role}</p>
-              </figcaption>
-            </figure>
-          ))}
         </div>
       </section>
 
-      {/* ------------------------------ harga -------------------------------- */}
-      <section id="harga" className="mx-auto max-w-6xl scroll-mt-24 px-5 pb-24 lg:px-8">
-        <div data-rise className="mx-auto max-w-2xl text-center">
-          <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/35">Harga</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight lg:text-5xl">
-            Mulai gratis. Naik kelas saat videonya meledak.
-          </h2>
-        </div>
-        <div className="mt-12 grid gap-4 lg:grid-cols-3">
-          {PLANS.map((p) => (
-            <article
-              key={p.name}
-              data-rise
-              className={`flex flex-col rounded-2xl border p-7 lg:p-8 ${
-                p.hot ? "border-white bg-white text-black" : "border-white/10 bg-white/[0.02]"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold uppercase tracking-[0.14em]">{p.name}</h3>
-                {p.hot && (
-                  <span className="rounded-full bg-black px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
-                    Terpopuler
-                  </span>
-                )}
               </div>
-              <p className="mt-4 text-4xl font-semibold tracking-tight">
-                {p.price}
-              </p>
-              <p className={`mt-1 text-xs ${p.hot ? "text-black/55" : "text-white/40"}`}>{p.period}</p>
-              <p className={`mt-3 text-sm leading-relaxed ${p.hot ? "text-black/65" : "text-white/55"}`}>{p.desc}</p>
-              <ul className={`mt-6 flex flex-col gap-2.5 border-t pt-6 text-[13px] ${p.hot ? "border-black/10" : "border-white/8"}`}>
-                {p.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2">
-                    <Check className={`mt-0.5 size-3.5 shrink-0 ${p.hot ? "text-black" : "text-white"}`} strokeWidth={3} />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/register"
-                className={`mt-7 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition ${
-                  p.hot ? "bg-black text-white hover:bg-black/80" : "bg-white text-black hover:bg-white/85"
-                }`}
-              >
-                {p.cta} <ArrowRight className="size-4" />
-              </Link>
             </article>
           ))}
         </div>
@@ -787,8 +777,9 @@ export default function LandingPage() {
       </section>
 
       {/* -------------------------------- cta -------------------------------- */}
-      <section data-cta className="border-t border-white/8 bg-white/[0.015]">
-        <div className="mx-auto max-w-6xl overflow-hidden px-5 py-24 text-center lg:px-8 lg:py-32">
+      <section data-cta className="relative overflow-hidden border-t border-white/8 bg-white/[0.015]">
+      <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 size-[42rem] -translate-x-1/2 -translate-y-1/3 rounded-full bg-violet-600/20 blur-[160px]" />
+        <div className="relative mx-auto max-w-6xl overflow-hidden px-5 py-24 text-center lg:px-8 lg:py-32">
           <div className="overflow-hidden">
             <p data-cta-line className="text-4xl font-semibold tracking-tight lg:text-6xl">
               Ide berikutnya layak tayang
@@ -806,7 +797,7 @@ export default function LandingPage() {
           <div data-cta-line className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/register"
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-medium text-black transition hover:bg-white/85"
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-medium text-black transition hover:bg-white/85 shadow-[0_0_50px_-12px_rgba(139,92,246,0.55)]"
             >
               Buat akun gratis <ArrowRight className="size-4" />
             </Link>
@@ -828,7 +819,7 @@ export default function LandingPage() {
               <span className="grid size-8 place-items-center rounded-lg bg-white">
                 <Clapperboard className="size-4 text-black" />
               </span>
-              <span className="text-sm font-semibold tracking-tight">Studio AI</span>
+              <span className="text-sm font-semibold tracking-tight">BroTek Labs</span>
             </div>
             <p className="mt-4 max-w-xs text-xs leading-relaxed text-white/40">
               Pipeline video AI end-to-end: generate, storyboard, jadwal, dan autopost dari
@@ -836,7 +827,7 @@ export default function LandingPage() {
             </p>
           </div>
           {[
-            ["Produk", ["Fitur", "Cara kerja", "Hasil", "Harga"]],
+            ["Produk", ["Fitur", "Cara kerja", "Hasil"]],
             ["Bantuan", ["FAQ", "Masuk", "Daftar", "Dashboard"]],
             ["Legal", ["Privasi", "Syarat layanan", "Keamanan", "Kontak"]],
           ].map(([title, links]) => (
@@ -856,7 +847,7 @@ export default function LandingPage() {
         </div>
         <div className="border-t border-white/8">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-5 py-5 text-[11px] text-white/35 lg:px-8">
-            <span>© 2026 Studio AI. Seluruh hak cipta dilindungi.</span>
+            <span>© 2026 BroTek Labs. Seluruh hak cipta dilindungi.</span>
             <span>Dibuat untuk kreator Indonesia.</span>
           </div>
         </div>
@@ -864,3 +855,4 @@ export default function LandingPage() {
     </main>
   );
 }
+

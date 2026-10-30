@@ -1,4 +1,5 @@
 import type {
+  CaptionFont,
   CaptionPosition,
   CaptionStyle,
   EditorCaption,
@@ -12,6 +13,7 @@ import type {
   StoryboardScene,
   VideoJob,
 } from "@/app/types";
+import { isCaptionFont } from "@/app/lib/caption-fonts";
 
 export function uid(prefix: string): string {
   return `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
@@ -217,6 +219,9 @@ export function buildDefaultProject(job: VideoJob): EditorProject {
       text: scene?.onScreenText || clip.title,
       style: "bold",
       position: "bottom",
+      font: "poppins",
+      bold: true,
+      italic: false,
     };
   });
 
@@ -314,6 +319,9 @@ export function normalizeProject(saved: EditorProject | undefined, job: VideoJob
           text: String(c.text || ""),
           style: (["bold", "karaoke", "minimal"] as const).includes(c.style) ? c.style : "bold",
           position: (["top", "middle", "bottom"] as const).includes(c.position) ? c.position : "bottom",
+          font: isCaptionFont(c.font) ? c.font : "poppins",
+          bold: c.bold !== false,
+          italic: c.italic === true,
         };
       })
     : base.captions;
@@ -523,6 +531,40 @@ export function runEditorCommand(raw: string, project: EditorProject, ctx: Comma
     const style: CaptionStyle = /karaoke/.test(q) ? "karaoke" : /minimal/.test(q) ? "minimal" : "bold";
     const captions = project.captions.map((c) => ({ ...c, style }));
     return commit({ ...project, captions, captionsEnabled: true }, `Gaya caption diubah ke “${style}” untuk semua segmen.`);
+  }
+  if (/(font|huruf|typeface).*(caption|subtitle|teks)|caption.*(font|huruf|bold|italic|tebal|miring)/.test(q)) {
+    const font: CaptionFont | null =
+      /poppins/.test(q) ? "poppins"
+      : /montserrat/.test(q) ? "montserrat"
+      : /anton/.test(q) ? "anton"
+      : /bebas/.test(q) ? "bebas"
+      : /playfair|serif/.test(q) ? "playfair"
+      : /inter/.test(q) ? "inter"
+      : null;
+    const off = /(tidak|jangan|tanpa|nonaktif|mati|off|biasa|normal)/.test(q);
+    const bold = /(bold|tebal)/.test(q) ? !off : null;
+    const italic = /(italic|miring)/.test(q) ? !off : null;
+    if (!font && bold === null && italic === null) {
+      return {
+        project,
+        reply: "Sebutkan fontnya (poppins, montserrat, anton, bebas, inter, playfair), atau “caption bold” / “caption italic”.",
+        changed: false,
+      };
+    }
+    const captions = project.captions.map((c) => ({
+      ...c,
+      ...(font ? { font } : {}),
+      ...(bold !== null ? { bold } : {}),
+      ...(italic !== null ? { italic } : {}),
+    }));
+    const parts: string[] = [];
+    if (font) parts.push(`font “${font}”`);
+    if (bold !== null) parts.push(bold ? "bold aktif" : "bold mati");
+    if (italic !== null) parts.push(italic ? "italic aktif" : "italic mati");
+    return commit(
+      { ...project, captions, captionsEnabled: true },
+      `Caption diperbarui (${parts.join(", ")}) untuk semua segmen.`,
+    );
   }
   if (/(caption|subtitle|teks).*(tengah|middle)/.test(q)) {
     const position: CaptionPosition = "middle";

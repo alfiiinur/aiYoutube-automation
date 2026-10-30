@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import type { ReferenceSource, VideoJob } from "../../../../types";
+import type { ReferenceSource, ThumbnailTemplate, VideoJob } from "../../../../types";
 import { downloadTextFile, jobToCaptionMd, jobToSrt, slugify } from "../../../../lib/job-export";
 
-export type JobTab = "script" | "storyboard" | "caption";
+export type JobTab = "script" | "storyboard" | "caption" | "thumbnail";
 
 export function useJobDetail() {
   const params = useParams<{ id: string }>();
@@ -14,6 +14,7 @@ export function useJobDetail() {
   const [refs, setRefs] = useState<ReferenceSource[]>([]);
   const [tab, setTab] = useState<JobTab>("script");
   const [error, setError] = useState<string | null>(null);
+  const [savingThumbnail, setSavingThumbnail] = useState(false);
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/jobs/${id}`, { cache: "no-store" });
@@ -35,7 +36,7 @@ export function useJobDetail() {
   useEffect(() => {
     const applyHash = () => {
       const hash = window.location.hash.replace("#", "");
-      if (hash === "script" || hash === "storyboard" || hash === "caption") setTab(hash);
+      if (hash === "script" || hash === "storyboard" || hash === "caption" || hash === "thumbnail") setTab(hash);
     };
     applyHash();
     window.addEventListener("hashchange", applyHash);
@@ -57,5 +58,26 @@ export function useJobDetail() {
     downloadTextFile(`${slugify(job.title)}-caption.md`, jobToCaptionMd(job), "text/markdown");
   };
 
-  return { job, refs, tab, setTab, error, retry, downloadSrt, downloadMd };
+  const updateThumbnail = useCallback(
+    async (template: ThumbnailTemplate) => {
+      if (!id || savingThumbnail) return;
+      setSavingThumbnail(true);
+      try {
+        const res = await fetch(`/api/jobs/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ thumbnailTemplate: template }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setJob(data.job);
+        }
+      } finally {
+        setSavingThumbnail(false);
+      }
+    },
+    [id, savingThumbnail],
+  );
+
+  return { job, refs, tab, setTab, error, retry, downloadSrt, downloadMd, updateThumbnail, savingThumbnail };
 }

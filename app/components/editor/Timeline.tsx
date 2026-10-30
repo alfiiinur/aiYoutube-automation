@@ -27,13 +27,19 @@ import type {
 import { MIN_CLIP, clamp, fmtRuler, fmtTime } from "@/app/lib/editor";
 
 const LABEL_W = 96;
-const CLIP_PALETTES = [
-  ["#232326", "#e5e5e5"],
-  ["#1b1b1e", "#fafafa"],
-  ["#26262b", "#d4d4d4"],
-  ["#1e1e21", "#f5f5f5"],
-  ["#17171a", "#ececef"],
-  ["#141416", "#e4e4e7"],
+
+/** Warna pastel lembut untuk blok klip supaya timeline terlihat lebih cerah. */
+type ClipTone = { from: string; to: string; edge: string; text: string };
+
+const CLIP_TONES: ClipTone[] = [
+  { from: "#dbeafe", to: "#bfdbfe", edge: "#93c5fd", text: "#1e3a8a" }, // biru
+  { from: "#ede9fe", to: "#ddd6fe", edge: "#c4b5fd", text: "#4c1d95" }, // ungu
+  { from: "#dcfce7", to: "#bbf7d0", edge: "#86efac", text: "#14532d" }, // mint
+  { from: "#fef3c7", to: "#fde68a", edge: "#fcd34d", text: "#78350f" }, // kuning
+  { from: "#fce7f3", to: "#fbcfe8", edge: "#f9a8d4", text: "#831843" }, // pink
+  { from: "#cffafe", to: "#a5f3fc", edge: "#67e8f9", text: "#155e75" }, // toska
+  { from: "#ffe4e6", to: "#fecdd3", edge: "#fda4af", text: "#881337" }, // rose
+  { from: "#e0e7ff", to: "#c7d2fe", edge: "#a5b4fc", text: "#312e81" }, // indigo
 ];
 
 type DragTrack = "clip" | "caption" | "overlay";
@@ -425,21 +431,26 @@ export default function Timeline({
               style={{ width: totalWidth }}
             >
               {project.clips.map((clip, clipIndex) => {
-                const palette = CLIP_PALETTES[(clip.sceneIndex - 1) % CLIP_PALETTES.length];
+                const tone = CLIP_TONES[(clip.sceneIndex - 1) % CLIP_TONES.length];
                 const selected = selection?.track === "clip" && selection.id === clip.id;
                 const dragging = draggingClip === clip.id;
-                const background =
-                  clip.media?.kind === "image"
-                    ? `linear-gradient(135deg, rgba(8,10,16,0.5), rgba(8,10,16,0.88)), url("${clip.media.url}") center/cover`
-                    : `linear-gradient(135deg, ${palette[0]}, rgba(10,12,18,0.92))`;
+                const hasImage = clip.media?.kind === "image";
+                /* Klip dengan gambar tetap memperlihatkan thumbnail, diberi lapisan warna lembut. */
+                const background = hasImage
+                  ? `linear-gradient(135deg, ${tone.from}80, ${tone.to}b3), url("${clip.media?.url}") center/cover`
+                  : `linear-gradient(135deg, ${tone.from}, ${tone.to})`;
+                const ink = hasImage ? "#ffffff" : tone.text;
+                const subInk = hasImage ? "rgba(255,255,255,0.72)" : `${tone.text}b3`;
                 return (
                   <div
                     key={clip.id}
                     className={`absolute top-1 bottom-1 z-10 cursor-grab overflow-hidden rounded-lg border text-left transition active:cursor-grabbing ${
                       selected
-                        ? "border-brand-400 ring-2 ring-brand-500/30"
-                        : "border-white/12 hover:border-white/25"
-                    } ${dragging ? "opacity-40 ring-2 ring-brand-500/40" : ""}`}
+                        ? "border-white ring-2 ring-white/45 shadow-[0_0_0_1px_rgba(0,0,0,0.45)]"
+                        : hasImage
+                          ? "border-white/20 hover:border-white/40"
+                          : "border-white/60 hover:border-white"
+                    } ${dragging ? "opacity-40 ring-2 ring-white/50" : ""}`}
                     style={{
                       left: clip.start * pps,
                       width: Math.max(14, (clip.end - clip.start) * pps),
@@ -450,22 +461,27 @@ export default function Timeline({
                   >
                     <div className="pointer-events-none flex h-full">
                       <div
-                        className="relative flex w-8 shrink-0 items-center justify-center border-r border-white/10"
-                        style={{ background: `linear-gradient(160deg, ${palette[1]}55, transparent)` }}
+                        className="relative flex w-8 shrink-0 items-center justify-center border-r"
+                        style={{
+                          background: `linear-gradient(160deg, ${tone.edge}dd, ${tone.edge}33)`,
+                          borderColor: hasImage ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.10)",
+                        }}
                       >
                         {clip.media?.kind === "video" ? (
-                          <Film className="size-3 text-white/80" />
+                          <Film className="size-3" style={{ color: ink }} />
                         ) : clip.media?.kind === "image" ? (
-                          <ImageIcon className="size-3 text-white/80" />
+                          <ImageIcon className="size-3" style={{ color: ink }} />
                         ) : (
-                          <span className="text-[10px] font-bold tabular-nums text-white/80">
+                          <span className="text-[10px] font-bold tabular-nums" style={{ color: ink }}>
                             {String(clip.sceneIndex).padStart(2, "0")}
                           </span>
                         )}
                       </div>
                       <div className="min-w-0 flex-1 px-1.5 py-1">
-                        <p className="truncate text-[9px] font-medium leading-tight text-white/80">{clip.title}</p>
-                        <p className="mt-0.5 truncate text-[8px] tabular-nums text-white/35">
+                        <p className="truncate text-[9px] font-semibold leading-tight" style={{ color: ink }}>
+                          {clip.title}
+                        </p>
+                        <p className="mt-0.5 truncate text-[8px] tabular-nums" style={{ color: subInk }}>
                           {(clip.end - clip.start).toFixed(1)}s
                         </p>
                       </div>

@@ -198,7 +198,7 @@ export function formatStats(stats: {
   totalSeconds: number;
 }) {
   return [
-    "📊 <b>Studio AI</b>",
+    "📊 <b>BroTek Labs</b>",
     `Job: <b>${stats.totalJobs}</b> (${stats.ready} siap · ${stats.active} aktif · ${stats.failed} gagal)`,
     `Referensi: <b>${stats.references}</b>`,
     `Automation: <b>${stats.automations}</b> (${stats.activeAutomations} aktif)`,
@@ -218,7 +218,7 @@ export function webUrl(path = "") {
 }
 
 export const HELP_TEXT = [
-  "🤖 <b>Studio AI Bot</b>",
+  "🤖 <b>BroTek Labs Bot</b>",
   "",
   "<b>Perintah</b>",
   "/generate &lt;prompt&gt; — buat job video baru",

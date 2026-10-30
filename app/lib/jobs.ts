@@ -90,6 +90,7 @@ export async function createJob(input: NewJobInput): Promise<VideoJob> {
     style,
     voice,
     model,
+    thumbnailTemplate: "bold",
     status: "analyzing",
     progress: 2,
     createdAt: now,

@@ -1,5 +1,10 @@
 import type { EditorCaption, EditorClip, EditorOverlay, EditorProject, VideoJob } from "@/app/types";
 import { storyboardImageUrl } from "@/app/lib/storyboard-image";
+import {
+  captionFontWeight,
+  ensureCaptionFontsLoaded,
+  resolveCanvasFontFamily,
+} from "@/app/lib/caption-fonts";
 import { isMonochrome, paletteAt, type VisualPalette } from "@/app/lib/visual-palette";
 
 export interface ExportOptions {
@@ -144,8 +149,8 @@ function drawCaption(
 ) {
   const bold = caption.style === "bold";
   const size = Math.round(w * (caption.style === "minimal" ? 0.031 : bold ? 0.044 : 0.04));
-  const weight = bold ? 800 : 700;
-  ctx.font = `${weight} ${size}px "Inter", system-ui, -apple-system, "Segoe UI", sans-serif`;
+  const weight = captionFontWeight(caption);
+  ctx.font = `${caption.italic ? "italic " : ""}${weight} ${size}px ${resolveCanvasFontFamily(caption.font)}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
@@ -357,7 +362,7 @@ export async function exportProjectToVideo(options: ExportOptions): Promise<Expo
     }
   });
 
-  await Promise.allSettled(imageJobs);
+  await Promise.allSettled([...imageJobs, ensureCaptionFontsLoaded(project.captions)]);
   report(12, "Aset visual siap");
 
   /* ---------- audio context + buffers ---------- */

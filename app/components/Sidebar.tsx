@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Sparkles,
+  Lightbulb,
   Link2,
   Film,
   CalendarClock,
@@ -22,6 +23,7 @@ import {
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/prompts", label: "Prompt Ideas", icon: Lightbulb },
   { href: "/generate", label: "Generate Video", icon: Sparkles },
   { href: "/references", label: "Referensi", icon: Link2 },
   { href: "/jobs", label: "Job & Render", icon: Film },
@@ -175,7 +177,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       </div>
       {!mini && (
         <div className="leading-tight">
-          <div className="text-sm font-semibold tracking-tight">Studio AI</div>
+          <div className="text-sm font-semibold tracking-tight">BroTek Labs</div>
           <div className="text-[11px] text-white/45">YT Automation Suite</div>
         </div>
       )}
@@ -199,7 +201,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
             <Clapperboard className="size-4 text-black" />
           </div>
           <div className="leading-tight">
-            <div className="text-sm font-semibold tracking-tight">Studio AI</div>
+            <div className="text-sm font-semibold tracking-tight">BroTek Labs</div>
             <div className="text-[10px] text-white/45">YT Automation Suite</div>
           </div>
         </div>
