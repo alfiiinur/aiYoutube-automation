@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2, Link2, RefreshCw, ExternalLink } from "lucide-react";
+import { Trash2, Link2, RefreshCw, ExternalLink, Paperclip, RotateCcw } from "lucide-react";
 import { Card, EmptyState } from "../../../components/ui";
 import type { SocialPost } from "../../../types";
 import { PLATFORM_LABEL, POST_STATUS_LABEL, POST_STATUS_STYLE } from "../_lib/constants";
@@ -10,11 +10,13 @@ export function ScheduledList({
   loading,
   onRefresh,
   onDelete,
+  onRetry,
 }: {
   posts: SocialPost[];
   loading: boolean;
   onRefresh: () => void;
   onDelete: (id: string) => void;
+  onRetry: (id: string) => void;
 }) {
   return (
     <div className="mt-6">
@@ -54,10 +56,23 @@ export function ScheduledList({
                   <p className="mt-1 text-[10px] text-white/30">
                     {PLATFORM_LABEL[p.platform]} · tayang {new Date(p.scheduledAt).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}
                     {p.publishedAt ? ` · dikirim ${new Date(p.publishedAt).toLocaleString("id-ID", { timeStyle: "short" })}` : ""}
+                    {p.mediaUrl ? (
+                      <>
+                        {" · "}
+                        <a href={p.mediaUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-white/45 underline-offset-2 hover:text-white/80 hover:underline">
+                          <Paperclip className="size-3" /> media
+                        </a>
+                      </>
+                    ) : ""}
                   </p>
                   {p.error && <p className="mt-1 text-[10px] text-brand-400">{p.error}</p>}
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
+                  {p.status === "failed" && (
+                    <button onClick={() => onRetry(p.id)} className="rounded-lg p-1.5 text-white/35 transition hover:bg-white/8 hover:text-lime-400" aria-label="Kirim ulang" title="Kirim ulang sekarang">
+                      <RotateCcw className="size-3.5" />
+                    </button>
+                  )}
                   {p.postUrl && (
                     <a href={p.postUrl} target="_blank" rel="noreferrer" className="rounded-lg p-1.5 text-white/35 transition hover:bg-white/8 hover:text-white/80" aria-label="Buka postingan">
                       <ExternalLink className="size-3.5" />

@@ -1,25 +1,32 @@
 "use client";
 
-import { Loader2, Send, CalendarClock, CalendarDays } from "lucide-react";
+import { useState } from "react";
+import { Loader2, Send, CalendarClock, CalendarDays, Upload, X, FolderOpen } from "lucide-react";
 import { Card } from "../../../components/ui";
+import { UploadProgress } from "../../../components/UploadProgress";
+import { useDropFiles } from "../../../lib/use-drop-files";
 import type { SocialPlatform } from "../../../types";
 import { PLATFORMS } from "../_lib/constants";
 import type { usePostComposer } from "../_hooks/usePostComposer";
+import { StockPicker } from "./StockPicker";
 
 type Composer = ReturnType<typeof usePostComposer>;
 
 export function PostComposer({ composer }: { composer: Composer }) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const drop = useDropFiles((files) => void composer.uploadMedia(files));
+
   return (
     <Card className="p-5">
       <h2 className="text-sm font-semibold text-white/85">Buat postingan</h2>
-      <p className="mt-1 text-[11px] text-white/40">Konten diambil dari job berstatus Siap.</p>
+      <p className="mt-1 text-[11px] text-white/40">Konten diambil dari job berstatus Siap, atau upload stock video/gambar sendiri.</p>
 
       <div className="mt-4 flex flex-col gap-3">
         <div>
-          <label className="text-[11px] text-white/45">Job video</label>
+          <label className="text-[11px] text-white/45">Job video (opsional jika pakai stock)</label>
           <select value={composer.jobId} onChange={(e) => composer.onSelectJob(e.target.value)} className="input-base mt-1.5">
             <option value="" className="bg-ink-900">
-              {composer.readyJobs.length === 0 ? "Belum ada job siap" : "— pilih job —"}
+              {composer.readyJobs.length === 0 ? "Belum ada job siap" : "— tanpa job / stock manual —"}
             </option>
             {composer.readyJobs.map((j) => (
               <option key={j.id} value={j.id} className="bg-ink-900">
@@ -27,6 +34,79 @@ export function PostComposer({ composer }: { composer: Composer }) {
               </option>
             ))}
           </select>
+        </div>
+
+        <div>
+          <label className="text-[11px] text-white/45">Stock video / gambar (opsional)</label>
+          {!composer.media ? (
+            <div className="mt-1.5 flex flex-col gap-2">
+              <label
+                {...drop.handlers}
+                className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed px-4 py-4 text-xs transition ${
+                  drop.dragging
+                    ? "border-white/50 bg-white/8 text-white/85"
+                    : "border-white/15 bg-white/3 text-white/45 hover:border-white/30 hover:text-white/70"
+                }`}
+              >
+                <input
+                  type="file"
+                  accept="video/*,image/*"
+                  multiple
+                  className="hidden"
+                  disabled={composer.uploading}
+                  onChange={(e) => {
+                    const files = e.target.files;
+                    e.target.value = "";
+                    if (files && files.length > 0) void composer.uploadMedia(files);
+                  }}
+                />
+                {composer.uploading ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" /> Mengunggah…
+                  </>
+                ) : (
+                  <>
+                    {drop.dragging ? (
+                      <>Lepas file untuk mengunggah</>
+                    ) : (
+                      <><Upload className="size-4" /> Upload baru · bisa banyak · maks 250 MB</>
+                    )}
+                  </>
+                )}
+              </label>
+              <button
+                type="button"
+                onClick={() => setPickerOpen(true)}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/4 px-4 py-2.5 text-xs text-white/70 transition hover:bg-white/8 hover:text-white"
+              >
+                <FolderOpen className="size-4" /> Pilih dari Stock
+              </button>
+              {composer.progress !== null && <UploadProgress fraction={composer.progress} />}
+            </div>
+          ) : (
+            <div className="mt-1.5 flex items-center gap-3 rounded-xl border border-white/10 bg-white/4 p-2.5">
+              {composer.media.kind === "video" ? (
+                <video src={composer.media.url} className="h-14 w-24 shrink-0 rounded-lg bg-black object-cover" muted playsInline preload="metadata" />
+              ) : (
+                <img src={composer.media.url} alt={composer.media.name} className="h-14 w-24 shrink-0 rounded-lg object-cover" />
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs text-white/80">{composer.media.name}</p>
+                <p className="mt-0.5 text-[10px] text-white/35">
+                  {composer.media.kind === "video" ? "Video" : "Gambar"}
+                  {typeof composer.media.size === "number" ? ` · ${(composer.media.size / 1024 / 1024).toFixed(1)} MB` : ""}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => composer.setMedia(null)}
+                className="rounded-lg p-1.5 text-white/35 transition hover:bg-white/8 hover:text-brand-400"
+                aria-label="Hapus media"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-2">
@@ -59,7 +139,7 @@ export function PostComposer({ composer }: { composer: Composer }) {
 
         <div>
           <label className="text-[11px] text-white/45">Caption</label>
-          <textarea value={composer.caption} onChange={(e) => composer.setCaption(e.target.value)} rows={3} placeholder="Caption akan terisi otomatis dari job terpilih." className="input-base mt-1.5 resize-y" />
+          <textarea value={composer.caption} onChange={(e) => composer.setCaption(e.target.value)} rows={3} placeholder={composer.jobId ? "Caption akan terisi otomatis dari job terpilih." : "Tulis caption untuk postingan ini."} className="input-base mt-1.5 resize-y" />
         </div>
 
         <div>
@@ -92,6 +172,12 @@ export function PostComposer({ composer }: { composer: Composer }) {
           </button>
         </div>
       </div>
+
+      <StockPicker
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onPick={(item) => composer.setMedia(item)}
+      />
     </Card>
   );
 }

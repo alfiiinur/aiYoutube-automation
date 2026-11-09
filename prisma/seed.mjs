@@ -129,13 +129,13 @@ async function main() {
   }
 
   const jobIds = new Set(jobs.map((j) => j.id));
-  const validPosts = posts.filter((p) => jobIds.has(p.jobId));
+  const validPosts = posts.filter((p) => !p.jobId || jobIds.has(p.jobId));
   const skipped = posts.length - validPosts.length;
   if (validPosts.length) {
     await prisma.socialPost.createMany({
       data: validPosts.map((p) => ({
         id: p.id,
-        jobId: p.jobId,
+        jobId: p.jobId ?? null,
         jobTitle: p.jobTitle ?? "",
         platform: p.platform,
         caption: p.caption ?? "",

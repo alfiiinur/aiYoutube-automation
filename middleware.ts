@@ -13,6 +13,7 @@ const PROTECTED_PREFIXES = [
   "/publish",
   "/schedule",
   "/settings",
+  "/stock",
 ];
 
 // API yang boleh diakses tanpa sesi (auth, cron ber-token, webhook, aset publik).
@@ -74,6 +75,7 @@ export const config = {
     "/publish/:path*",
     "/schedule/:path*",
     "/settings/:path*",
+    "/stock/:path*",
     "/login",
     "/register",
     "/api/:path*",

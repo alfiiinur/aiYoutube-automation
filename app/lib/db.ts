@@ -8,6 +8,7 @@ import type {
   Goal,
   GoalMetric,
   JobStatus,
+  MediaFolder,
   PromptHistoryEntry,
   PromptSkill,
   ReferenceSource,
@@ -16,6 +17,7 @@ import type {
   SocialPlatform,
   SocialPost,
   StoryboardScene,
+  StockMedia,
   VideoJob,
 } from "@/app/types";
 
@@ -56,6 +58,8 @@ type AutomationRow = Prisma.AutomationGetPayload<object>;
 type SocialAccountRow = Prisma.SocialAccountGetPayload<object>;
 type SocialPostRow = Prisma.SocialPostGetPayload<object>;
 type ScheduleNoteRow = Prisma.ScheduleNoteGetPayload<object>;
+type MediaFolderRow = Prisma.MediaFolderGetPayload<object>;
+type StockMediaRow = Prisma.StockMediaGetPayload<object>;
 
 export function toVideoJob(row: JobRow): VideoJob {
   return {
@@ -185,7 +189,7 @@ export function toSocialAccount(row: SocialAccountRow): SocialAccount {
 export function toSocialPost(row: SocialPostRow): SocialPost {
   return {
     id: row.id,
-    jobId: row.jobId,
+    jobId: row.jobId ?? undefined,
     jobTitle: row.jobTitle,
     platform: row.platform as SocialPlatform,
     caption: row.caption,
@@ -317,7 +321,7 @@ export function socialAccountCreateData(
 export function socialPostCreateData(post: SocialPost): Prisma.SocialPostUncheckedCreateInput {
   return {
     id: post.id,
-    jobId: post.jobId,
+    jobId: post.jobId ?? null,
     jobTitle: post.jobTitle,
     platform: post.platform,
     caption: post.caption,
@@ -355,5 +359,50 @@ export function scheduleNoteCreateData(note: ScheduleNote): Prisma.ScheduleNoteU
     text: note.text,
     color: note.color,
     createdAt: toDate(note.createdAt),
+  };
+}
+
+export function toMediaFolder(row: MediaFolderRow, mediaCount?: number): MediaFolder {
+  return {
+    id: row.id,
+    name: row.name,
+    createdAt: row.createdAt.getTime(),
+    ...(mediaCount === undefined ? {} : { mediaCount }),
+  };
+}
+
+export function mediaFolderCreateData(folder: MediaFolder): Prisma.MediaFolderUncheckedCreateInput {
+  return {
+    id: folder.id,
+    name: folder.name,
+    createdAt: toDate(folder.createdAt),
+  };
+}
+
+export function toStockMedia(row: StockMediaRow): StockMedia {
+  return {
+    id: row.id,
+    folderId: row.folderId ?? undefined,
+    url: row.url,
+    name: row.name,
+    kind: row.kind === "image" ? "image" : "video",
+    mime: row.mime,
+    size: row.size ?? undefined,
+    duration: row.duration ?? undefined,
+    createdAt: row.createdAt.getTime(),
+  };
+}
+
+export function stockMediaCreateData(media: StockMedia): Prisma.StockMediaUncheckedCreateInput {
+  return {
+    id: media.id,
+    folderId: media.folderId ?? null,
+    url: media.url,
+    name: media.name,
+    kind: media.kind,
+    mime: media.mime,
+    size: media.size ?? null,
+    duration: media.duration ?? null,
+    createdAt: toDate(media.createdAt),
   };
 }

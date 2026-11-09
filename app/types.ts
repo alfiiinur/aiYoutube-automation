@@ -258,7 +258,8 @@ export interface SocialAccount {
 
 export interface SocialPost {
   id: string;
-  jobId: string;
+  /** Kosong untuk postingan stock video yang tidak terikat ke job. */
+  jobId?: string;
   jobTitle: string;
   platform: SocialPlatform;
   caption: string;
@@ -293,7 +294,7 @@ export interface Automation {
   cron: string;
   humanSchedule: string;
   promptTemplate: string;
-  platform: "youtube" | "tiktok" | "instagram";
+  platform: "youtube" | "tiktok" | "instagram" | "threads" | "facebook";
   privacy: "public" | "unlisted" | "private";
   lastRunAt?: number;
   nextRunAt?: number;
@@ -307,4 +308,26 @@ export interface Db {
   automations: Automation[];
   socialAccounts: SocialAccount[];
   posts: SocialPost[];
+}
+
+export type StockMediaKind = "video" | "image";
+
+export interface MediaFolder {
+  id: string;
+  name: string;
+  createdAt: number;
+  /** Terisi di daftar folder (jumlah isi). */
+  mediaCount?: number;
+}
+
+export interface StockMedia {
+  id: string;
+  folderId?: string;
+  url: string;
+  name: string;
+  kind: StockMediaKind;
+  mime: string;
+  size?: number;
+  duration?: number;
+  createdAt: number;
 }

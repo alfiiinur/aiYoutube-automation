@@ -11,8 +11,9 @@ Dashboard untuk mengotomatiskan produksi video YouTube/Short: tulis prompt, temp
 - **Referensi** — analisis metadata (YouTube oEmbed resmi + Open Graph) dan penyimpulan pola hook/struktur
 - **Job & Render** — daftar job, progress live, script/storyboard/caption, render ulang
 - **Editor** — timeline klip, caption, overlay, musik, dan chat editor
-- **Auto Post** — akun Threads/Instagram/Facebook + jadwal tayang
-- **Automation** — jadwal produksi + upload otomatis (mode simulasi, hook untuk integrasi nyata)
+- **Auto Post** — akun Threads/Instagram/Facebook + jadwal tayang; bisa dari job Siap atau upload stock video/gambar sendiri (terkirim otomatis saat jadwal tiba, mode simulasi bila tanpa token Meta)
+- **Stock Media** — pustaka stock video & gambar per folder style, lengkap dengan preview dan picker di Auto Post
+- **Automation** — jadwal produksi otomatis (YouTube, TikTok, Instagram, Threads, Facebook); platform sosial otomatis diteruskan ke Auto Post
 - **Settings** — status koneksi provider berdasarkan environment variable
 
 ## Stack

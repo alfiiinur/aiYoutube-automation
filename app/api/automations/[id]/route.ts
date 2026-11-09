@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma, toAutomation } from "@/app/lib/db";
+import { runAutomation } from "@/app/lib/automations";
 
 export const dynamic = "force-dynamic";
 
@@ -12,18 +13,34 @@ export async function PATCH(req: Request, { params }: Ctx) {
   const row = await prisma.automation.findUnique({ where: { id } });
   if (!row) return NextResponse.json({ error: "Automation tidak ditemukan" }, { status: 404 });
 
-  const now = Date.now();
+  if (body.runNow) {
+    try {
+      const result = await runAutomation(id);
+      let automation = result.automation;
+      if (typeof body.enabled === "boolean" && body.enabled !== automation.enabled) {
+        const toggled = await prisma.automation.update({
+          where: { id },
+          data: { enabled: body.enabled },
+        });
+        automation = toAutomation(toggled);
+      }
+      return NextResponse.json({
+        automation,
+        jobId: result.job.id,
+        postId: result.postId ?? null,
+      });
+    } catch (e) {
+      return NextResponse.json(
+        { error: e instanceof Error ? e.message : "Gagal menjalankan automation" },
+        { status: 500 },
+      );
+    }
+  }
+
   const updated = await prisma.automation.update({
     where: { id },
     data: {
       ...(typeof body.enabled === "boolean" ? { enabled: body.enabled } : {}),
-      ...(body.runNow
-        ? {
-            lastRunAt: new Date(now),
-            runs: { increment: 1 },
-            nextRunAt: new Date(now + 24 * 3600_000),
-          }
-        : {}),
     },
   });
 

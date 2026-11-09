@@ -20,7 +20,7 @@ export default function PublishPage() {
     <div>
       <PageHeader
         title="Auto Post"
-        subtitle="Hubungkan akun Threads, Instagram, dan Facebook, lalu jadwalkan konten dari video yang sudah siap dipublikasikan."
+        subtitle="Hubungkan akun Threads, Instagram, dan Facebook, lalu jadwalkan konten dari job Siap atau stock video sendiri."
       />
 
       {error && (
@@ -38,7 +38,7 @@ export default function PublishPage() {
       </div>
 
       {/* Postingan terjadwal */}
-      <ScheduledList posts={posts} loading={loading} onRefresh={loadAll} onDelete={composer.deletePost} />
+      <ScheduledList posts={posts} loading={loading} onRefresh={loadAll} onDelete={composer.deletePost} onRetry={composer.retryPost} />
 
       <ScheduleModal
         open={composer.scheduleOpen}

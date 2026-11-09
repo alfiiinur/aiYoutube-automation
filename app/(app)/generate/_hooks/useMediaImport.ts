@@ -24,7 +24,7 @@ export function useMediaImport() {
         const duration = await probeMediaDuration(file);
         const body = new FormData();
         body.append("file", file);
-        const res = await fetch("/api/uploads", { method: "POST", body });
+        const res = await fetch("/upload", { method: "POST", body });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error ?? `Gagal mengunggah ${file.name}`);
         const asset = data.asset as EditorMedia;

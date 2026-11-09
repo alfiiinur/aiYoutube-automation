@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { syncJobs } from "@/app/lib/jobs";
+import { publishDuePosts } from "@/app/lib/posts";
+import { runDueAutomations } from "@/app/lib/automations";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Tick ringan untuk memajukan pipeline & mengirim notifikasi Telegram.
+ * Tick ringan untuk memajukan pipeline, mengirim postingan yang jatuh tempo,
+ * menjalankan automation yang tiba jadwalnya, & mengirim notifikasi Telegram.
  * Panggil dari cron eksternal tiap 1 menit (atau dari scripts/telegram-poll.mjs).
  *
  * Kalau CRON_SECRET diset, wajib kirim header:
@@ -20,5 +23,12 @@ export async function GET(req: Request) {
   }
 
   const jobs = await syncJobs();
-  return NextResponse.json({ ok: true, jobs: jobs.length });
+  const posts = await publishDuePosts();
+  const automations = await runDueAutomations();
+  return NextResponse.json({
+    ok: true,
+    jobs: jobs.length,
+    posts: posts.length,
+    automations: automations.length,
+  });
 }

@@ -42,6 +42,8 @@ enum AutomationPlatform {
   youtube
   tiktok
   instagram
+  threads
+  facebook
 }
 
 enum AutomationPrivacy {
@@ -137,7 +139,7 @@ model SocialAccount {
 
 model SocialPost {
   id          String        @id
-  jobId       String
+  jobId       String?
   jobTitle    String
   platform    SocialPlatform
   caption     String        @default("")
@@ -151,7 +153,7 @@ model SocialPost {
   error       String?
   createdAt   DateTime      @default(now())
 
-  job VideoJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  job VideoJob? @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@index([scheduledAt])
   @@index([status])
@@ -233,4 +235,30 @@ model User {
   updatedAt    DateTime @updatedAt
 
   @@index([email])
+}
+model MediaFolder {
+  id        String   @id
+  name      String
+  createdAt DateTime @default(now())
+
+  media StockMedia[]
+
+  @@index([createdAt])
+}
+
+model StockMedia {
+  id        String   @id
+  folderId  String?
+  url       String   @unique
+  name      String
+  kind      String
+  mime      String
+  size      Int?
+  duration  Float?
+  createdAt DateTime @default(now())
+
+  folder MediaFolder? @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  @@index([folderId])
+  @@index([createdAt])
 }

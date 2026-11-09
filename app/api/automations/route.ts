@@ -1,26 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma, automationCreateData, toAutomation } from "@/app/lib/db";
 import { newId } from "@/app/lib/store";
+import { AUTOMATION_PLATFORMS, nextRunFromCron } from "@/app/lib/automations";
 import type { Automation } from "@/app/types";
 
 export const dynamic = "force-dynamic";
 
-function nextRunFromNow(cron: string): number {
-  const hours = cron.match(/^\d+\s+(\d+)/);
-  const every = cron.startsWith("every:");
-  if (every) {
-    const minutes = Number(cron.split(":")[1]) || 60;
-    return Date.now() + minutes * 60_000;
-  }
-  if (hours) {
-    const h = Number(hours[1]) || 9;
-    const d = new Date();
-    d.setHours(h, 0, 0, 0);
-    if (d.getTime() <= Date.now()) d.setDate(d.getDate() + 1);
-    return d.getTime();
-  }
-  return Date.now() + 24 * 3600_000;
-}
+const PRIVACIES: Automation["privacy"][] = ["public", "unlisted", "private"];
 
 export async function GET() {
   const rows = await prisma.automation.findMany({ orderBy: { createdAt: "desc" } });
@@ -35,6 +21,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Nama dan template prompt wajib diisi" }, { status: 400 });
   }
 
+  const platform = AUTOMATION_PLATFORMS.includes(body.platform as Automation["platform"])
+    ? (body.platform as Automation["platform"])
+    : "youtube";
+  const privacy = PRIVACIES.includes(body.privacy as Automation["privacy"])
+    ? (body.privacy as Automation["privacy"])
+    : "public";
+
   const cron = String(body.cron ?? "every:1440");
   const created: Automation = {
     id: newId("auto"),
@@ -43,10 +36,10 @@ export async function POST(req: Request) {
     cron,
     humanSchedule: String(body.humanSchedule ?? "Setiap hari, 09:00"),
     promptTemplate,
-    platform: body.platform ?? "youtube",
-    privacy: body.privacy ?? "public",
+    platform,
+    privacy,
     runs: 0,
-    nextRunAt: nextRunFromNow(cron),
+    nextRunAt: nextRunFromCron(cron),
     createdAt: Date.now(),
   };
 

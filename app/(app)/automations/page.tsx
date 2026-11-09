@@ -12,6 +12,9 @@ const SCHEDULES = [
   { cron: "every:1440", human: "Setiap 24 jam" },
 ];
 
+const PLATFORMS: Automation["platform"][] = ["youtube", "tiktok", "instagram", "threads", "facebook"];
+const SOCIAL_PLATFORMS: Automation["platform"][] = ["instagram", "threads", "facebook"];
+
 export default function AutomationsPage() {
   const [items, setItems] = useState<Automation[]>([]);
   const [name, setName] = useState("");
@@ -20,7 +23,9 @@ export default function AutomationsPage() {
   const [platform, setPlatform] = useState<Automation["platform"]>("youtube");
   const [privacy, setPrivacy] = useState<Automation["privacy"]>("public");
   const [busy, setBusy] = useState(false);
+  const [runningId, setRunningId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const load = async () => {
     const r = await fetch("/api/automations", { cache: "no-store" }).then((x) => x.json());
@@ -38,6 +43,7 @@ export default function AutomationsPage() {
     }
     setBusy(true);
     setError(null);
+    setNotice(null);
     try {
       const humanSchedule = SCHEDULES.find((s) => s.cron === schedule)?.human ?? schedule;
       const res = await fetch("/api/automations", {
@@ -67,12 +73,28 @@ export default function AutomationsPage() {
   };
 
   const runNow = async (a: Automation) => {
-    await fetch(`/api/automations/${a.id}`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ runNow: true }),
-    });
-    await load();
+    setRunningId(a.id);
+    setError(null);
+    setNotice(null);
+    try {
+      const res = await fetch(`/api/automations/${a.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ runNow: true }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Gagal menjalankan automation");
+      setNotice(
+        data.postId
+          ? `Berjalan: job ${data.jobId} dibuat dan diteruskan ke Auto Post.`
+          : `Berjalan: job ${data.jobId} dibuat. Pantau di halaman Jobs.`,
+      );
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal menjalankan automation");
+    } finally {
+      setRunningId(null);
+    }
   };
 
   const remove = async (id: string) => {
@@ -84,8 +106,14 @@ export default function AutomationsPage() {
     <div>
       <PageHeader
         title="Automation"
-        subtitle="Jadwalkan produksi + upload otomatis. Saat ini berjalan mode simulasi; hubungkan OAuth YouTube untuk upload nyata."
+        subtitle="Jadwalkan produksi otomatis. Platform sosial (Instagram, Threads, Facebook) otomatis diteruskan ke Auto Post."
       />
+
+      {notice && (
+        <div className="mb-4 rounded-xl border border-lime-500/30 bg-lime-500/8 px-4 py-3 text-xs text-lime-300">
+          {notice}
+        </div>
+      )}
 
       <div className="grid gap-4 xl:grid-cols-[1fr_1.4fr]">
         <Card className="p-5">
@@ -131,7 +159,7 @@ export default function AutomationsPage() {
                   onChange={(e) => setPlatform(e.target.value as Automation["platform"])}
                   className="input-base mt-1.5"
                 >
-                  {["youtube", "tiktok", "instagram"].map((p) => (
+                  {PLATFORMS.map((p) => (
                     <option key={p} value={p} className="bg-ink-900">
                       {p}
                     </option>
@@ -140,20 +168,26 @@ export default function AutomationsPage() {
               </div>
             </div>
 
-            <div>
-              <label className="text-[11px] text-white/45">Visibilitas</label>
-              <select
-                value={privacy}
-                onChange={(e) => setPrivacy(e.target.value as Automation["privacy"])}
-                className="input-base mt-1.5"
-              >
-                {["public", "unlisted", "private"].map((p) => (
-                  <option key={p} value={p} className="bg-ink-900">
-                    {p}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {SOCIAL_PLATFORMS.includes(platform) ? (
+              <p className="rounded-lg bg-white/4 px-2.5 py-1.5 text-[11px] text-white/35">
+                Hasil automation {platform} otomatis dibuatkan postingan di Auto Post setiap jadwal berjalan.
+              </p>
+            ) : (
+              <div>
+                <label className="text-[11px] text-white/45">Visibilitas</label>
+                <select
+                  value={privacy}
+                  onChange={(e) => setPrivacy(e.target.value as Automation["privacy"])}
+                  className="input-base mt-1.5"
+                >
+                  {["public", "unlisted", "private"].map((p) => (
+                    <option key={p} value={p} className="bg-ink-900">
+                      {p}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           {error && <p className="mt-2 text-xs text-brand-400">{error}</p>}
@@ -194,10 +228,11 @@ export default function AutomationsPage() {
                   <div className="flex shrink-0 items-center gap-1">
                     <button
                       onClick={() => runNow(a)}
-                      className="rounded-lg p-1.5 text-white/35 transition hover:bg-white/8 hover:text-lime-400"
+                      disabled={runningId === a.id}
+                      className="rounded-lg p-1.5 text-white/35 transition hover:bg-white/8 hover:text-lime-400 disabled:opacity-50"
                       title="Jalankan sekarang"
                     >
-                      <Play className="size-3.5" />
+                      {runningId === a.id ? <Loader2 className="size-3.5 animate-spin" /> : <Play className="size-3.5" />}
                     </button>
                     <button
                       onClick={() => remove(a.id)}
